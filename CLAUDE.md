@@ -17,6 +17,7 @@
 - Never reorder results toward normal order.
 - Elementary anticommutators [a_p, a†_q]_+ are unevaluated ElementaryBracket scalars through
   stages 1-2: no delta, delta_pp = 1, delta_ia = 0, or summation collapse before DeltaEvaluate.
-- Default route: when both apply, split the LEFT string with (1.8.4), as HJO does,
-  not the right string with (1.8.5).
+- Default route: split the RIGHT string first; split the left only when the right can't be
+  split rank-reducingly. This reproduces HJO's printed (1.8.14)-(1.8.16) and (1S.2.4).
+- Strict rank reduction stays: no partial expansions (see DESIGN_DECISIONS.md, "Deferred").
 - IndexPool names stay numbered (p1, i1, a1); relabel dummies to letters only in the final output.

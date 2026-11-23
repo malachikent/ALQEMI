@@ -20,14 +20,18 @@
 
 - Step 3 implemented: `pipeline/linearize.py` (`linearize`, `is_linear`). `core/expr.py` gained `Term.all_names` and `freshen_dummies`. Added 2 tests: fresh dummy names must avoid names in later factors and deeper brackets (a capture bug the reference implementation had).
 
+- Step 4 (rule library + IdentityExpand) spec and tests written: `alqemi/tests/test_step4_identity_expand.py` (223 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 4".
+- Checked the spec against the HJO text. Decision 11 revised to right-first, because it reproduces HJO's printed (1.8.14)-(1.8.16) and (1S.2.4). Decision 6 (strict rank reduction) kept; partial expansion recorded under "Deferred" in DESIGN_DECISIONS.md.
+
 ## In progress
-- Nothing is half-done. Step 4 has no spec or tests yet.
+- Step 4 code (`alqemi/rules/hjo.py`, `alqemi/pipeline/identity_expand.py`) is not written yet.
 
 ## Tests
-- `pytest alqemi`: 258 pass (70 in step 1, 110 in step 2, 67 in step 3, 11 legacy), 0 failing.
+- `pytest alqemi` currently stops at collection: `test_step4_identity_expand.py` cannot import `alqemi.rules`. This is expected until Step 4 code exists.
+- Against a throwaway reference implementation: 481 pass (258 earlier, 223 in step 4), about 20-40 s in total.
 
 ## Open questions
 - None.
 
 ## Next step
-Write the Step 4 spec and tests before any Step 4 code. Step 4 is stage 2 of the pipeline, IdentityExpand: the Rule objects for (1.8.4)-(1.8.9) and (1.8.1)/(1.8.2), selected by rank reduction, applied until only ElementaryBrackets remain. Unsupported brackets raise `UnsupportedBracket`.
+Implement Step 4 (`rules/hjo.py`, `pipeline/identity_expand.py`) to make `test_step4_identity_expand.py` pass.

@@ -31,6 +31,9 @@ Source: Helgaker, Jørgensen & Olsen (HJO), Ch. 1 (Helgaker_excerpt.pdf in this 
    if every bracket it produces is of a rank-reducing kind. Consequence: a commutator
    of two odd strings, or an anticommutator involving an even string, has no
    rank-reducing expansion and raises `UnsupportedBracket` (never `quit()`).
+   Reconfirmed 2026-11-23 after checking HJO: the book says to reduce rank "to the
+   greatest extent possible" and does not say what to do when no route reduces fully.
+   ALQEMI keeps the strict reading. See "Deferred: partial expansion" below.
 7. **Pipeline:** Linearize → IdentityExpand (until only ElementaryBrackets remain) →
    DeltaEvaluate → Simplify. Kronecker deltas exist only from stage 3 on.
 8. **Results are never reordered toward normal order.** E.g. (1S.2.4) contains a_R a†_P;
@@ -46,9 +49,15 @@ Source: Helgaker, Jørgensen & Olsen (HJO), Ch. 1 (Helgaker_excerpt.pdf in this 
     ALQEMI is stricter: elementary anticommutators [a_p, a†_q]_+ stay as unevaluated
     leaves through stages 1–2. Linearity may move them as scalars, but no δ, δ_pp = 1,
     δ_ia = 0, or summation collapse happens before stage 3 (DeltaEvaluate).
-11. **Default expansion route follows HJO.** When both are valid and rank-reducing, split
-    the LEFT string with (1.8.4), as HJO does for (1.8.13), rather than the right string
-    with (1.8.5). That way ALQEMI's trace reads like the book.
+11. **Default expansion route: split the RIGHT string first** (revised 2026-11-23; it
+    was "left first"). Use the left string only when the right one cannot be split
+    rank-reducingly (e.g. [E_PQ, a†_R]). Reason, checked against the HJO text: ALQEMI
+    never reorders, so the route fixes the final operator order. Right-first reproduces
+    the book's printed (1.8.14), (1.8.15) and (1.8.16) term for term, and gives the same
+    operator strings as (1S.2.4). Left-first gives different operator strings for
+    (1.8.15) (e.g. a†_R a†_M a_N a_Q) and (1S.2.4) (e.g. a_S a†_Q). The trade-off is
+    that the intermediate step for (1.8.13) is [E_PQ, a†_R] a_S + a†_R [E_PQ, a_S],
+    not the book's [a†_P, E_RS] a_Q + a†_P [a_Q, E_RS]; the final (1.8.14) is the same.
 12. **Dummy names: numbered inside, letters only in the final output.** `IndexPool` keeps
     issuing numbered names (p1, i1, a1, ...), which never run out and never clash.
     Dummies are relabelled to textbook letters (occ i, j, k, l, ...; virt a, b, c, d, ...;
@@ -112,6 +121,58 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
   Validated against a throwaway reference implementation; all 17 planted bugs caught.
 - `core/expr.py` gained `Term.all_names` and `freshen_dummies(target, clash, avoid,
   pool)`, now shared by `multiply_terms` and Linearize.
+
+## Step 4 (spec + tests written 2026-11-23): rule library and stage 2, IdentityExpand
+- `alqemi/rules/hjo.py`: `Rule`, `Side`, `RULES` (14), `is_elementary`,
+  `is_rank_reducing`, `select_rule`, `UnsupportedBracket`. Kept apart from the legacy
+  SymPy-based `alqemi/algebra/`, which is left untouched.
+- `alqemi/pipeline/identity_expand.py`: `identity_expand(x, pool, trace)`, `TraceStep`.
+- Choices made in the spec:
+  - Rules split a string into its single operators (n = string length). The binary
+    equations (1.8.4)/(1.8.6)/(1.8.8) are the n = 2 cases and take priority, so
+    HJO's names show up in the trace. HJO's own derivations sometimes split into
+    larger pieces ((1S.2.3)); with right-first, single-operator splits still give the
+    book's printed results.
+  - Left forms ("L") are derived from the right forms via (1.8.1)/(1.8.2) and keep
+    the split piece on the left: [A_k, B], as in HJO (1.8.13).
+  - Selection is not a parity table. It picks the first rule (right side first per
+    decision 11, binary first) whose created brackets are all rank-reducing; the
+    parity table is a test. Left forms fire only when the right string cannot be split
+    (e.g. [E_PQ, a†_R] uses 1.8.6L).
+    A consequence: (1.8.8) never fires on single-operator splits, because one created
+    bracket is always non-rank-reducing. It stays in the library as a tested identity.
+  - [x, y]_+ of two single operators is the leaf. It becomes an ElementaryBracket
+    scalar (trace step "elementary"), not a rule application.
+  - An empty side is handled first: [A, 1] = 0 by (1.8.5) with n = 0; [A, 1]_+ raises.
+  - Traversal is innermost-first, then left to right. A nested bracket's result is
+    re-linearized, so its ElementaryBrackets move out as scalars (decision 10).
+  - Odd/odd commutators raise anywhere, including after nesting: e.g.
+    [a†_P, [E_QR, [E_SM, a_N]]] reaches [a†_P, single operator] and raises.
+- Results are tested only against the oracle. Structure is tested for the route
+  (trace), invariants (no brackets left, no deltas created, one elementary bracket per
+  bracket level, operators conserved, n + m − 2 string length) and unsupported cases.
+- Checked against the HJO text (Sec. 1.2.3, 1.8, Exercises/Solutions 1.2-1.3) on
+  2026-11-23: rank-reduction rule, (1.8.1)-(1.8.17) and (1.2.27)-(1.2.29) all agree with
+  the spec and with MATHEMATICAL_CONTRACT.md. The route was switched to right-first.
+- Spec + tests: `alqemi/tests/test_step4_identity_expand.py` (223 checks; route tests
+  for (1.8.14), (1.8.15), (1S.2.4)). Validated against a throwaway reference
+  implementation; all 21 planted bugs caught, and left-first fails 11 tests.
+
+## Deferred: partial expansion (not planned; revisit only if needed)
+Some brackets have no fully rank-reducing expansion. Strict mode (decision 6) raises
+`UnsupportedBracket` for them. HJO's "to the greatest extent possible" would allow
+expanding them anyway, keeping some terms at full rank:
+- [odd, odd] commutator, e.g. [a_P, a_Q]: no product to split. Only the definitions
+  help: [A, B] = [A, B]_+ − 2BA, so [a_P, a_Q] = −2 a_Q a_P. Nothing is reduced.
+- Anticommutator with an even string, e.g. [a_P, a†_Q a_R]_+: by (1.8.8b) it becomes
+  δ_PQ a_R − 2 a†_Q a_P a_R. One term reduces, one keeps full rank.
+- [even, even] anticommutator, e.g. [E_PQ, E_RS]_+ = [E_PQ, E_RS] + 2 E_RS E_PQ.
+These rarely arise in practice: commutators of excitation operators (BCH, coupled
+cluster) are always even/even and reduce fully. If we ever need them, add a fallback
+"expand by definition" rule from (1.8.1)/(1.8.2), tried only after every library rule
+fails and marked as non-reducing in the trace. Also decide a tie-break between partial
+routes (e.g. 1.8.8a vs 1.8.8b). It would be a new rule beyond the current library, so
+CLAUDE.md would need updating too.
 
 ## OPEN
 - None.
