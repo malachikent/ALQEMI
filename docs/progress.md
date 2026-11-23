@@ -13,15 +13,16 @@
 
 - Step 2 spec and tests written: `alqemi/tests/test_step2_expr.py` (110 checks, the spec is in its docstring) and the oracle evaluator `alqemi/tests/evaluate.py`. Summary in DESIGN_DECISIONS.md, "Step 2".
 
+- Step 2 implemented: `core/pool.py` (`IndexPool`) and `core/expr.py` (`Delta`, `ElementaryBracket`, `Bracket`, `Term`, `Expr`, `as_expr`, `multiply_terms`, `multiply`). No sympy. Each class has a readable `__str__` for traces.
+
 ## In progress
-- Step 2 code (`alqemi/core/pool.py`, `alqemi/core/expr.py`) is not written yet.
+- Nothing is half-done. Step 3 has no spec or tests yet.
 
 ## Tests
-- `pytest alqemi` currently stops at collection: `test_step2_expr.py` cannot import `alqemi.core.expr`. This is expected until Step 2 code exists.
-- Against a throwaway reference implementation: 191 pass (81 earlier, 110 in step 2).
+- `pytest alqemi`: 191 pass (70 in step 1, 110 in step 2, 11 legacy), 0 failing.
 
 ## Open questions
 - None.
 
 ## Next step
-Implement Step 2 (`core/pool.py`, `core/expr.py`) to make `test_step2_expr.py` pass.
+Write the Step 3 spec and tests before any Step 3 code. Step 3 is stage 1 of the pipeline, Linearize: pull coefficients, sums and dummies out of bracket arguments using multiply/IndexPool.

@@ -61,7 +61,7 @@ n + m − 2 elementary operators.
 - Spec + tests: `alqemi/tests/test_step1_core.py` (70 checks; validated against a
   throwaway reference implementation, and confirmed to catch planted bugs).
 
-## Step 2 (spec + tests written 2026-11-23): expression layer
+## Step 2 (done 2026-11-23): expression layer
 Still no algebra: no bracket is expanded, no delta evaluated, no like terms merged.
 - `alqemi/core/pool.py`: `IndexPool.fresh(space, avoid)`; names p1.., i1.., a1.. per space.
 - `alqemi/core/expr.py`: `Delta`, `ElementaryBracket` (unevaluated, decision 10),
