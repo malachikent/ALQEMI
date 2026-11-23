@@ -158,6 +158,34 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
   for (1.8.14), (1.8.15), (1S.2.4)). Validated against a throwaway reference
   implementation; all 21 planted bugs caught, and left-first fails 11 tests.
 
+## Step 5 (spec + tests written 2026-11-23): pipeline stage 3, DeltaEvaluate
+- `alqemi/pipeline/delta_evaluate.py`: `delta_evaluate(x)`, `DanglingSum`.
+  `alqemi/core/indices.py` gains `Space.contains`.
+- Choices made in the spec:
+  - [x, y]_+ becomes Delta(x.index, y.index): the delta keeps the bracket's order.
+    That is how HJO writes every printed result ([a_Q, a†_R]_+ → δ_QR in (1.8.14)),
+    so the golden deltas come out exactly as printed. Creator-first (the form of the
+    definition (1.2.29)) would flip about half of them. Same-kind brackets give 0.
+    Note for Simplify (Step 6): δ_PQ X and δ_QP X are like terms, so deltas must be
+    compared as symmetric when merging.
+  - δ_pp → 1; δ_ia (non-overlapping spaces) → 0; terms with a zero factor are removed.
+    Terms with a 0 coefficient are kept for Simplify.
+  - A summed index collapses only onto an index whose space it contains. Σ_p δ_pi
+    becomes i, but Σ_i δ_iP stays (P may be virtual). When both indices are summed,
+    the wider one goes; on a tie, the right one goes.
+  - Free deltas never substitute into operators (δ_QR a†_P a_S stays), matching HJO.
+  - Equal-valued deltas (δ_PQ δ_QP) are kept once.
+  - A sum that no longer occurs (Σ_k δ_kk a_P = M a_P, with M the number of
+    orbitals) raises `DanglingSum`. See "Deferred: space dimensions".
+- Spec + tests: `alqemi/tests/test_step5_delta_evaluate.py` (66 checks). Validated
+  against a throwaway reference implementation; all 18 planted bugs caught.
+
+## Deferred: space dimensions (not planned; revisit only if needed)
+Σ_k δ_kk = number of orbitals in k's space, which ALQEMI has no symbol for, so
+DeltaEvaluate raises `DanglingSum`. It arises from inputs like Σ_k [a_k, a†_k a_P]. If
+needed, add a scalar for a space's dimension (e.g. N_occ, N_virt, N_general) and
+produce it instead of raising.
+
 ## Deferred: partial expansion (not planned; revisit only if needed)
 Some brackets have no fully rank-reducing expansion. Strict mode (decision 6) raises
 `UnsupportedBracket` for them. HJO's "to the greatest extent possible" would allow

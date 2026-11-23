@@ -25,14 +25,17 @@
 
 - Step 4 implemented: `rules/hjo.py` (`Rule`, `Side`, `RULES`, `is_elementary`, `is_rank_reducing`, `select_rule`, `UnsupportedBracket`) and `pipeline/identity_expand.py` (`identity_expand`, `TraceStep`). With elementary brackets read as δ or 0, the output reproduces HJO's printed (1.8.14), (1.8.15), (1.8.16) term for term, and the operator strings of (1S.2.4).
 
+- Step 5 (DeltaEvaluate) spec and tests written: `alqemi/tests/test_step5_delta_evaluate.py` (66 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 5". A sum that no longer occurs (Σ_k δ_kk) raises `DanglingSum`; recorded under "Deferred: space dimensions".
+
 ## In progress
-- Nothing is half-done. Step 5 has no spec or tests yet.
+- Step 5 code (`alqemi/pipeline/delta_evaluate.py`, `Space.contains` in `core/indices.py`) is not written yet.
 
 ## Tests
-- `pytest alqemi`: 481 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 11 legacy), 0 failing. About 20 s.
+- `pytest alqemi` currently stops at collection: `test_step5_delta_evaluate.py` cannot import `alqemi.pipeline.delta_evaluate`. This is expected until Step 5 code exists.
+- Against a throwaway reference implementation: 547 pass (481 earlier, 66 in step 5).
 
 ## Open questions
 - None.
 
 ## Next step
-Write the Step 5 spec and tests before any Step 5 code. Step 5 is stage 3 of the pipeline, DeltaEvaluate: turn ElementaryBrackets into deltas or zero by (1.2.27)-(1.2.29) (creator-first [a†_P, a_Q]_+ = δ_PQ, and the reverse order too), then evaluate deltas (δ_PP = 1, δ_ia = 0) and collapse sums over dummies.
+Implement Step 5 (`pipeline/delta_evaluate.py`, `Space.contains`) to make `test_step5_delta_evaluate.py` pass.
