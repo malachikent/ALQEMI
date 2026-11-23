@@ -18,6 +18,10 @@ class Space(Enum):
             return True
         return self is other
 
+    def contains(self, other: Space) -> bool:
+        """Whether every index in ``other`` can also be an index in this space."""
+        return self is Space.GENERAL or self is other
+
 
 @dataclass(frozen=True)
 class Index:

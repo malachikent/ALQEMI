@@ -158,7 +158,7 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
   for (1.8.14), (1.8.15), (1S.2.4)). Validated against a throwaway reference
   implementation; all 21 planted bugs caught, and left-first fails 11 tests.
 
-## Step 5 (spec + tests written 2026-11-23): pipeline stage 3, DeltaEvaluate
+## Step 5 (done 2026-11-23): pipeline stage 3, DeltaEvaluate
 - `alqemi/pipeline/delta_evaluate.py`: `delta_evaluate(x)`, `DanglingSum`.
   `alqemi/core/indices.py` gains `Space.contains`.
 - Choices made in the spec:

@@ -27,15 +27,16 @@
 
 - Step 5 (DeltaEvaluate) spec and tests written: `alqemi/tests/test_step5_delta_evaluate.py` (66 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 5". A sum that no longer occurs (Σ_k δ_kk) raises `DanglingSum`; recorded under "Deferred: space dimensions".
 
+- Step 5 implemented: `pipeline/delta_evaluate.py` (`delta_evaluate`, `DanglingSum`) and `Space.contains`. Through stage 3 the pipeline prints HJO's (1.8.11)-(1.8.16) as in the book, except for the order of deltas within a term (scalars are stored sorted: δ_QR δ_SM rather than the book's δ_SM δ_QR). Like terms are not merged yet: [E_PQ, Σ_p E_pp] gives a†_P a_Q - a†_P a_Q.
+
 ## In progress
-- Step 5 code (`alqemi/pipeline/delta_evaluate.py`, `Space.contains` in `core/indices.py`) is not written yet.
+- Nothing is half-done. Step 6 has no spec or tests yet.
 
 ## Tests
-- `pytest alqemi` currently stops at collection: `test_step5_delta_evaluate.py` cannot import `alqemi.pipeline.delta_evaluate`. This is expected until Step 5 code exists.
-- Against a throwaway reference implementation: 547 pass (481 earlier, 66 in step 5).
+- `pytest alqemi`: 547 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 11 legacy), 0 failing. About 20 s.
 
 ## Open questions
 - None.
 
 ## Next step
-Implement Step 5 (`pipeline/delta_evaluate.py`, `Space.contains`) to make `test_step5_delta_evaluate.py` pass.
+Write the Step 6 spec and tests before any Step 6 code. Step 6 is stage 4, Simplify: merge like terms (deltas compared as symmetric, dummies compared up to renaming), drop zero coefficients, and relabel dummies to letters for the final output (decision 12). Possibly also a top-level function that runs the whole pipeline.
