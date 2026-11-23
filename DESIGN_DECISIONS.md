@@ -89,7 +89,7 @@ Still no algebra: no bracket is expanded, no delta evaluated, no like terms merg
   algebra). Validated against a throwaway reference implementation; 21 planted bugs
   checked: 20 caught, and the remaining mutation changes no behaviour.
 
-## Step 3 (spec + tests written 2026-11-23): pipeline stage 1, Linearize
+## Step 3 (done 2026-11-23): pipeline stage 1, Linearize
 Only the bilinearity of (1.8.1)/(1.8.2): coefficients, scalars (deltas and elementary
 anticommutators are c-numbers) and summations come out of bracket arguments.
 - `alqemi/pipeline/linearize.py`: `linearize(x, pool) -> Expr` and `is_linear(x)`.
@@ -105,8 +105,13 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
     gets a fresh pool name.
   - Capture ([Σ_k A_k, δ_kS B] with k free on the right) cannot happen: Step 2's
     no-shadowing check rejects such input.
-- Spec + tests: `alqemi/tests/test_step3_linearize.py` (65 checks, 14 oracle cases).
+  - A fresh name avoids every name in the whole input term, including factors after
+    the bracket and deeper brackets. Otherwise a later free a†_p1 could be captured
+    by a new Σ_p1. The reference implementation missed this; 2 tests were added.
+- Spec + tests: `alqemi/tests/test_step3_linearize.py` (67 checks, 14 oracle cases).
   Validated against a throwaway reference implementation; all 17 planted bugs caught.
+- `core/expr.py` gained `Term.all_names` and `freshen_dummies(target, clash, avoid,
+  pool)`, now shared by `multiply_terms` and Linearize.
 
 ## OPEN
 - None.

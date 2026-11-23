@@ -18,15 +18,16 @@
 - Settled decision 12: IndexPool names stay numbered, and dummies are relabelled to letters only in the final output.
 - Step 3 (Linearize) spec and tests written: `alqemi/tests/test_step3_linearize.py` (65 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 3".
 
+- Step 3 implemented: `pipeline/linearize.py` (`linearize`, `is_linear`). `core/expr.py` gained `Term.all_names` and `freshen_dummies`. Added 2 tests: fresh dummy names must avoid names in later factors and deeper brackets (a capture bug the reference implementation had).
+
 ## In progress
-- Step 3 code (`alqemi/pipeline/__init__.py`, `alqemi/pipeline/linearize.py`) is not written yet.
+- Nothing is half-done. Step 4 has no spec or tests yet.
 
 ## Tests
-- `pytest alqemi` currently stops at collection: `test_step3_linearize.py` cannot import `alqemi.pipeline`. This is expected until Step 3 code exists.
-- Against a throwaway reference implementation: 256 pass (191 earlier, 65 in step 3).
+- `pytest alqemi`: 258 pass (70 in step 1, 110 in step 2, 67 in step 3, 11 legacy), 0 failing.
 
 ## Open questions
 - None.
 
 ## Next step
-Implement Step 3 (`pipeline/linearize.py`) to make `test_step3_linearize.py` pass.
+Write the Step 4 spec and tests before any Step 4 code. Step 4 is stage 2 of the pipeline, IdentityExpand: the Rule objects for (1.8.4)-(1.8.9) and (1.8.1)/(1.8.2), selected by rank reduction, applied until only ElementaryBrackets remain. Unsupported brackets raise `UnsupportedBracket`.

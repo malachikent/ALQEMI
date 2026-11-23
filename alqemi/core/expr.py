@@ -244,6 +244,11 @@ class Term:
         return _names(self._indices_here()) | self._bound_names()
 
     @property
+    def all_names(self) -> FrozenSet[str]:
+        """Every index name in the term, free or bound, at any depth."""
+        return frozenset(self._all_names())
+
+    @property
     def free_indices(self) -> FrozenSet[Index]:
         return frozenset(self._indices_here() - self.summed)
 
@@ -361,11 +366,19 @@ def as_expr(x) -> Expr:
 # =========================================================================
 # Products
 # =========================================================================
-def _freshen(target: Term, other_names: Set[str], avoid: Set[str], pool: IndexPool) -> Term:
-    """Rename every bound index of ``target`` whose name occurs in ``other_names``."""
+def freshen_dummies(
+    target: Term, clash: Iterable[str], avoid: Set[str], pool: IndexPool
+) -> Term:
+    """Rename every bound index of ``target`` (any depth) whose name is in ``clash``.
+
+    New names come from ``pool.fresh(space, avoid)`` and are added to ``avoid``,
+    so one ``avoid`` set can be shared across several calls on the same product.
+    Free indices are never renamed.
+    """
+    clash = set(clash)
     mapping: Dict[Index, Index] = {}
     for ix in sorted(target._bound(), key=_index_key):
-        if ix.name in other_names:
+        if ix.name in clash:
             new = pool.fresh(ix.space, avoid)
             avoid.add(new.name)
             mapping[ix] = new
@@ -375,8 +388,8 @@ def _freshen(target: Term, other_names: Set[str], avoid: Set[str], pool: IndexPo
 def multiply_terms(left: Term, right: Term, pool: IndexPool) -> Term:
     """left * right, with clashing dummies renamed from ``pool``. Free indices never change."""
     avoid = left._all_names() | right._all_names()
-    right = _freshen(right, left._all_names(), avoid, pool)
-    left = _freshen(left, right._all_names(), avoid, pool)
+    right = freshen_dummies(right, left._all_names(), avoid, pool)
+    left = freshen_dummies(left, right._all_names(), avoid, pool)
     return Term(
         left.coeff * right.coeff,
         left.scalars + right.scalars,

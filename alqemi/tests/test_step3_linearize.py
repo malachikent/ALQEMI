@@ -169,6 +169,20 @@ class TestDummies:
         assert p1 in term.free_indices
         assert len(term.summed) == 2 and p1 not in term.summed
 
+    def test_fresh_name_avoids_names_in_later_factors(self):
+        # p1 appears only AFTER the bracket; the fresh dummy must still avoid it,
+        # or the free a†_p1 would be captured by the new sum.
+        out = lin(T(comm(T(E(k, P), summed=[k]), T(E(Q, k), summed=[k])), cre(p1)))
+        (term,) = out.terms
+        assert p1 in term.free_indices
+        assert len(term.summed) == 2 and p1 not in term.summed
+
+    def test_fresh_name_avoids_names_in_deeper_brackets(self):
+        deep = comm(cre(p1), ann(M))
+        out = lin(T(comm(T(E(k, P), summed=[k]), T(E(Q, k), summed=[k])), comm(ann(N), deep)))
+        (term,) = out.terms
+        assert p1 in term.free_indices and p1 not in term.summed
+
     def test_free_and_own_summed_untouched(self):
         term = T(E(k, M), comm(T(E(P, l), summed=[l]), cre(N)), summed=[k])
         out = lin(term)
