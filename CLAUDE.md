@@ -19,3 +19,4 @@
   stages 1-2: no delta, delta_pp = 1, delta_ia = 0, or summation collapse before DeltaEvaluate.
 - Default route: when both apply, split the LEFT string with (1.8.4), as HJO does,
   not the right string with (1.8.5).
+- IndexPool names stay numbered (p1, i1, a1); relabel dummies to letters only in the final output.

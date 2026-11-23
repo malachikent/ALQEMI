@@ -15,14 +15,18 @@
 
 - Step 2 implemented: `core/pool.py` (`IndexPool`) and `core/expr.py` (`Delta`, `ElementaryBracket`, `Bracket`, `Term`, `Expr`, `as_expr`, `multiply_terms`, `multiply`). No sympy. Each class has a readable `__str__` for traces.
 
+- Settled decision 12: IndexPool names stay numbered, and dummies are relabelled to letters only in the final output.
+- Step 3 (Linearize) spec and tests written: `alqemi/tests/test_step3_linearize.py` (65 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 3".
+
 ## In progress
-- Nothing is half-done. Step 3 has no spec or tests yet.
+- Step 3 code (`alqemi/pipeline/__init__.py`, `alqemi/pipeline/linearize.py`) is not written yet.
 
 ## Tests
-- `pytest alqemi`: 191 pass (70 in step 1, 110 in step 2, 11 legacy), 0 failing.
+- `pytest alqemi` currently stops at collection: `test_step3_linearize.py` cannot import `alqemi.pipeline`. This is expected until Step 3 code exists.
+- Against a throwaway reference implementation: 256 pass (191 earlier, 65 in step 3).
 
 ## Open questions
 - None.
 
 ## Next step
-Write the Step 3 spec and tests before any Step 3 code. Step 3 is stage 1 of the pipeline, Linearize: pull coefficients, sums and dummies out of bracket arguments using multiply/IndexPool.
+Implement Step 3 (`pipeline/linearize.py`) to make `test_step3_linearize.py` pass.

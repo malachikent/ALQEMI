@@ -49,6 +49,11 @@ Source: Helgaker, Jørgensen & Olsen (HJO), Ch. 1 (Helgaker_excerpt.pdf in this 
 11. **Default expansion route follows HJO.** When both are valid and rank-reducing, split
     the LEFT string with (1.8.4), as HJO does for (1.8.13), rather than the right string
     with (1.8.5). That way ALQEMI's trace reads like the book.
+12. **Dummy names: numbered inside, letters only in the final output.** `IndexPool` keeps
+    issuing numbered names (p1, i1, a1, ...), which never run out and never clash.
+    Dummies are relabelled to textbook letters (occ i, j, k, l, ...; virt a, b, c, d, ...;
+    general p, q, r, s, ...) only once, at the end (Simplify or final printing). Free
+    indices are never relabelled.
 
 ## Golden results (all verified by the oracle)
 (1.8.11), (1.8.12), (1.8.14), (1.8.15), (1.8.16), (1S.2.4). Property for later steps
@@ -83,6 +88,25 @@ Still no algebra: no bracket is expanded, no delta evaluated, no like terms merg
   `alqemi/tests/evaluate.py` (reads Step 2 objects, builds oracle matrices, no ALQEMI
   algebra). Validated against a throwaway reference implementation; 21 planted bugs
   checked: 20 caught, and the remaining mutation changes no behaviour.
+
+## Step 3 (spec + tests written 2026-11-23): pipeline stage 1, Linearize
+Only the bilinearity of (1.8.1)/(1.8.2): coefficients, scalars (deltas and elementary
+anticommutators are c-numbers) and summations come out of bracket arguments.
+- `alqemi/pipeline/linearize.py`: `linearize(x, pool) -> Expr` and `is_linear(x)`.
+- Linear form: every bracket, at any depth, has exactly one bare argument term on each
+  side (coeff 1, no scalars, no summed); everything else sits on the top-level terms.
+- Choices made in the spec:
+  - An identity argument is kept ([A, δ] → δ [A, 1]). Stage 2 evaluates it: (1.8.5)
+    with n = 0 gives 0 for a commutator, and an anticommutator with an even string
+    has no rank-reducing expansion. No new rule is needed.
+  - A zero argument makes the product vanish (empty sum). A zero coefficient is kept.
+  - Term order is deterministic and left-major, as in `multiply`.
+  - Clashing pulled-out dummies: the first occurrence keeps its name, the later one
+    gets a fresh pool name.
+  - Capture ([Σ_k A_k, δ_kS B] with k free on the right) cannot happen: Step 2's
+    no-shadowing check rejects such input.
+- Spec + tests: `alqemi/tests/test_step3_linearize.py` (65 checks, 14 oracle cases).
+  Validated against a throwaway reference implementation; all 17 planted bugs caught.
 
 ## OPEN
 - None.
