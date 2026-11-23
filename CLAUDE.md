@@ -15,3 +15,7 @@
 - Rule selection: HJO principle of rank reduction. Anticommute two odd-length strings;
   commute all other pairs. A rule fires only if all brackets it creates are rank-reducing.
 - Never reorder results toward normal order.
+- Elementary anticommutators [a_p, a†_q]_+ are unevaluated ElementaryBracket scalars through
+  stages 1-2: no delta, delta_pp = 1, delta_ia = 0, or summation collapse before DeltaEvaluate.
+- Default route: when both apply, split the LEFT string with (1.8.4), as HJO does,
+  not the right string with (1.8.5).
