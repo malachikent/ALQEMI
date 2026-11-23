@@ -11,14 +11,17 @@
   - Default route splits the left string with (1.8.4), following HJO.
 - Renamed the GitHub repo from `old_ALQEMI` to `ALQEMI` (public), and set `origin` to `git@github.com:malachikent/ALQEMI.git`.
 
+- Step 2 spec and tests written: `alqemi/tests/test_step2_expr.py` (110 checks, the spec is in its docstring) and the oracle evaluator `alqemi/tests/evaluate.py`. Summary in DESIGN_DECISIONS.md, "Step 2".
+
 ## In progress
-- Nothing is half-done. Step 2 has no spec or tests yet.
+- Step 2 code (`alqemi/core/pool.py`, `alqemi/core/expr.py`) is not written yet.
 
 ## Tests
-- `pytest alqemi`: 81 pass (70 in step 1, 11 legacy), 0 failing.
+- `pytest alqemi` currently stops at collection: `test_step2_expr.py` cannot import `alqemi.core.expr`. This is expected until Step 2 code exists.
+- Against a throwaway reference implementation: 191 pass (81 earlier, 110 in step 2).
 
 ## Open questions
 - None.
 
 ## Next step
-Write the Step 2 spec and tests (`alqemi/tests/test_step2_*.py`) before writing any Step 2 code.
+Implement Step 2 (`core/pool.py`, `core/expr.py`) to make `test_step2_expr.py` pass.

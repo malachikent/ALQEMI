@@ -61,5 +61,28 @@ n + m − 2 elementary operators.
 - Spec + tests: `alqemi/tests/test_step1_core.py` (70 checks; validated against a
   throwaway reference implementation, and confirmed to catch planted bugs).
 
+## Step 2 (spec + tests written 2026-11-23): expression layer
+Still no algebra: no bracket is expanded, no delta evaluated, no like terms merged.
+- `alqemi/core/pool.py`: `IndexPool.fresh(space, avoid)`; names p1.., i1.., a1.. per space.
+- `alqemi/core/expr.py`: `Delta`, `ElementaryBracket` (unevaluated, decision 10),
+  `BracketKind`, `Bracket`/`comm`/`acomm`, `Term`, `Expr`, `as_expr`,
+  `multiply_terms`, `multiply`.
+- Representation choices made in the spec:
+  - Term = coeff · scalars · ordered factors, summed. Scalars commute, so they are
+    stored in a canonical order. Factors never reorder: adjacent OpStrings concatenate
+    and empty ones drop.
+  - `Delta` and `ElementaryBracket` use structural equality (δ_PQ ≠ δ_QP);
+    symmetry belongs to DeltaEvaluate/Simplify.
+  - Expr keeps terms verbatim: no merging, and zero coefficients are not dropped.
+  - Term/Expr have no `*`; products go through `multiply(…, pool)`, so dummies are
+    always freshened. Right-term dummies are renamed first, then left-term dummies
+    that clash with a free index on the right.
+  - No shadowing: a name bound in a nested bracket term may not appear in the
+    enclosing term. That makes `Term.rename` a plain substitution.
+- Spec + tests: `alqemi/tests/test_step2_expr.py` (110 checks). Numerical referee:
+  `alqemi/tests/evaluate.py` (reads Step 2 objects, builds oracle matrices, no ALQEMI
+  algebra). Validated against a throwaway reference implementation; 21 planted bugs
+  checked: 20 caught, and the remaining mutation changes no behaviour.
+
 ## OPEN
 - None.
