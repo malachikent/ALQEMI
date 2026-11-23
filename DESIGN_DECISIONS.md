@@ -122,7 +122,7 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - `core/expr.py` gained `Term.all_names` and `freshen_dummies(target, clash, avoid,
   pool)`, now shared by `multiply_terms` and Linearize.
 
-## Step 4 (spec + tests written 2026-11-23): rule library and stage 2, IdentityExpand
+## Step 4 (done 2026-11-23): rule library and stage 2, IdentityExpand
 - `alqemi/rules/hjo.py`: `Rule`, `Side`, `RULES` (14), `is_elementary`,
   `is_rank_reducing`, `select_rule`, `UnsupportedBracket`. Kept apart from the legacy
   SymPy-based `alqemi/algebra/`, which is left untouched.

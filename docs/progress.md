@@ -23,15 +23,16 @@
 - Step 4 (rule library + IdentityExpand) spec and tests written: `alqemi/tests/test_step4_identity_expand.py` (223 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 4".
 - Checked the spec against the HJO text. Decision 11 revised to right-first, because it reproduces HJO's printed (1.8.14)-(1.8.16) and (1S.2.4). Decision 6 (strict rank reduction) kept; partial expansion recorded under "Deferred" in DESIGN_DECISIONS.md.
 
+- Step 4 implemented: `rules/hjo.py` (`Rule`, `Side`, `RULES`, `is_elementary`, `is_rank_reducing`, `select_rule`, `UnsupportedBracket`) and `pipeline/identity_expand.py` (`identity_expand`, `TraceStep`). With elementary brackets read as δ or 0, the output reproduces HJO's printed (1.8.14), (1.8.15), (1.8.16) term for term, and the operator strings of (1S.2.4).
+
 ## In progress
-- Step 4 code (`alqemi/rules/hjo.py`, `alqemi/pipeline/identity_expand.py`) is not written yet.
+- Nothing is half-done. Step 5 has no spec or tests yet.
 
 ## Tests
-- `pytest alqemi` currently stops at collection: `test_step4_identity_expand.py` cannot import `alqemi.rules`. This is expected until Step 4 code exists.
-- Against a throwaway reference implementation: 481 pass (258 earlier, 223 in step 4), about 20-40 s in total.
+- `pytest alqemi`: 481 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 11 legacy), 0 failing. About 20 s.
 
 ## Open questions
 - None.
 
 ## Next step
-Implement Step 4 (`rules/hjo.py`, `pipeline/identity_expand.py`) to make `test_step4_identity_expand.py` pass.
+Write the Step 5 spec and tests before any Step 5 code. Step 5 is stage 3 of the pipeline, DeltaEvaluate: turn ElementaryBrackets into deltas or zero by (1.2.27)-(1.2.29) (creator-first [a†_P, a_Q]_+ = δ_PQ, and the reverse order too), then evaluate deltas (δ_PP = 1, δ_ia = 0) and collapse sums over dummies.
