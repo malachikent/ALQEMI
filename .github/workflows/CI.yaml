@@ -8,7 +8,7 @@ on:
   # The cookiecutter uses the "--initial-branch" flag when it runs git-init
   push:
     branches:
-      - "main"
+      - "**"
   pull_request:
     branches:
       - "main"

@@ -209,7 +209,7 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - Spec + tests: `alqemi/tests/test_step6_simplify.py` (55 checks). Validated against a
   throwaway reference implementation; all 15 planted bugs caught.
 
-## Step 7 (spec 2026-11-24): public API, legacy cleanup, packaging
+## Step 7 (done 2026-11-24): public API, legacy cleanup, packaging
 - No new mathematics. Spec + tests: `alqemi/tests/test_step7_package.py` (53 checks).
   Validated against a throwaway reference implementation; all 21 planted bugs caught.
 - Public API: `alqemi.__all__` is exactly the Step 1-6 user-facing names (symbols,
@@ -229,6 +229,8 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - The rest of the cookiecutter (versioningit, CI, docs, conda test env, LICENSE,
   py.typed) stays: it is what ships the package. PyPI upload on a version tag and a
   conda-forge recipe come later.
+- Checked: a wheel built from the repo contains only `alqemi.*`, declares no run-time
+  dependencies, and works from a clean virtualenv outside the repo.
 
 ## Step 8 (planned): tensors and coupled-cluster operators
 - `Tensor`: a commuting scalar with a name, upper and lower indices and a declared

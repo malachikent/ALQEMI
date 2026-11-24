@@ -33,17 +33,26 @@
 
 - Step 6 implemented: `pipeline/simplify.py` (`simplify`, `relabel_dummies`) and `pipeline/run.py` (`run`). The four-stage pipeline is complete. `run` reproduces HJO's (1.8.11)-(1.8.16) and (1S.2.4); [E_PQ, Σ_k E_kk], [E_PQ, E_PQ] and the Jacobi identity give exactly 0; sums like [Σ_k E_kP, Σ_k E_kQ] come out as Σ_p a†_p a_Q - Σ_p a†_p a_P.
 
+## Done (2026-11-24)
+- No SymPy anywhere in v3 (decision 13; CLAUDE.md updated).
+- Step 7 spec and tests: `alqemi/tests/test_step7_package.py` (53 checks, spec in its docstring).
+- Step 7 implemented:
+  - `alqemi/__init__.py` exports the 25 public names via `__all__`; `__version__` falls back to "0+unknown".
+  - Deleted the legacy SymPy code (`algebra/`, `sample.py`, legacy tests) and cookiecutter leftovers (`alqemi.py`, `data/`).
+  - `core/cluster.py` and `core/tools.py` are kept as reference for Step 8.
+  - `codegen/` is kept as the home of einsum code generation.
+  - `pyproject.toml`: no run-time dependencies, Python >=3.11, packages found as `alqemi*`, Source URL.
+  - `docs/api.rst` lists the public API; README badges point at malachikent/ALQEMI; CI runs on pushes to every branch.
+  - A wheel built from the repo installs and runs in a clean virtualenv.
+
 ## In progress
-- Step 7 (public API, legacy cleanup, packaging) spec and tests written:
-  `alqemi/tests/test_step7_package.py` (53 checks, spec in its docstring). Not implemented yet.
-- CLAUDE.md and DESIGN_DECISIONS.md: no SymPy anywhere in v3 (decision 13).
+- Nothing is half-done.
 - Step 8 planned (DESIGN_DECISIONS.md, "Step 8"): `Tensor`, operator definitions,
   `hamiltonian()`, `cluster(n)`, `FluctuationPotential()`.
 
 ## Tests
-- `pytest alqemi`: 602 pass + the new Step 7 file, which fails until Step 7 is implemented
-  (8 of its 53 checks already pass).
+- `pytest alqemi`: 644 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 55 in step 6, 53 in step 7), 0 failing. About 20 s.
 
 ## Next step
-Implement Step 7. Then Step 8 spec and tests. Later: Fermi-vacuum projections and
-einsum code generation, direct LaTeX printing (decision 13).
+Step 8 spec and tests. Later: Fermi-vacuum projections, einsum code generation,
+direct LaTeX printing (decision 13).
