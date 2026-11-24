@@ -10,6 +10,8 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-24
+
 ### Added
 - Spin integration for UHF: `Spin` and `Index(..., spin=...)`; `spin_integrate(expr)`
   splits a projected spin-orbital equation into its canonical alpha/beta blocks
@@ -21,6 +23,8 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ### Changed
 - Simplify keeps alpha and beta dummies apart and names alpha dummies in upper case.
+- The performance tests compare each speed-up against the same work without it on
+  the same machine, so they no longer depend on the speed of the CI runner.
 
 ## [0.2.0] - 2026-11-24
 
