@@ -25,9 +25,13 @@ from alqemi.pipeline.identity_expand import TraceStep, identity_expand
 from alqemi.pipeline.delta_evaluate import DanglingSum, delta_evaluate
 from alqemi.pipeline.simplify import relabel_dummies, simplify
 from alqemi.pipeline.run import run
+from alqemi.pipeline.project import projection, vacuum_expectation
+from alqemi.pipeline.bch import bch
 from alqemi.rules.hjo import UnsupportedBracket
 from alqemi.builders import (
     cluster,
+    deexcitation,
+    excitation,
     fluctuation_potential,
     fock_operator,
     hamiltonian,
@@ -53,4 +57,6 @@ __all__ = [
     # tensors and builders
     "Tensor", "Swap", "tensor_operator", "fock_operator", "fluctuation_potential",
     "hamiltonian", "cluster",
+    # projections
+    "excitation", "deexcitation", "vacuum_expectation", "projection", "bch",
 ]

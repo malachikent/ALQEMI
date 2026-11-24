@@ -10,6 +10,15 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+### Added
+- `excitation(n)` (tau_mu with free indices) and `deexcitation(n)` (Lambda_n).
+- `vacuum_expectation(x)` = <HF| x |HF> and `projection(n, x)` = <mu_n| x |HF>,
+  evaluated without Wick's theorem: summed general indices are split into occupied
+  and virtual copies, and each |HF>-killer is absorbed into a rank-reducing bracket.
+- `bch(h, t, order=4)`: the BCH expansion of e^{-T} H e^{T}.
+- Together these derive coupled-cluster equations, e.g. the CCSD energy and the
+  18-term CCD doubles residual.
+
 ## [0.1.0] - 2026-11-24
 
 First release of ALQEMI v3, a rewrite of the earlier SymPy-based prototype:

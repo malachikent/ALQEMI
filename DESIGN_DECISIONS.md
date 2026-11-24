@@ -286,7 +286,7 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - End goal (later step): generate Python code from derived expressions, as
   `np.einsum` / `opt_einsum.contract` calls, for the prototype codes (`alqemi/codegen/`).
 
-## Step 9 (spec 2026-11-24): Fermi-vacuum projections
+## Step 9 (done 2026-11-24): Fermi-vacuum projections
 - Spec + tests: `alqemi/tests/test_step9_projection.py` (73 checks, spec in its docstring).
   Validated against a throwaway reference implementation: 893 tests pass, all 19
   planted bugs caught. The reference reproduces the CCSD energy (5 terms) and the
@@ -323,6 +323,9 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - General indices (settled 2026-11-24): split. Each summed GENERAL index becomes an
   OCC copy and a VIRT copy of its term before projection; results name their blocks
   (f_ov, v_oovv, ...), as code generation needs. A free GENERAL index is a ValueError.
+- Implemented as specified; the real code also catches all 19 planted bugs. Timings:
+  CCSD energy from bch(H, T1+T2, order=2) about 9 s in total; CCD doubles residual
+  (18 terms) 3.5 s after bch.
 - Modules: `excitation`, `deexcitation` in `builders.py`; `vacuum_expectation`,
   `projection` in `pipeline/project.py`; `bch` in `pipeline/bch.py`. The Step 7
   public-API list grows by these five names.
@@ -358,6 +361,20 @@ dummies are renamed around free names). If needed: a `blocks(x)` helper returnin
 {space choice of the free general indices: specialized copy of x}, then project each
 block (results are block-structured, as EPT writes them and codegen needs). Also
 possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free names.
+
+## Candidates: unitary CC and high-order BCH (not scheduled)
+- `adjoint(x)`: reverse and adjoint every operator string, keep real tensors as they
+  are, so T2^dagger = 1/4 sum t^{ab}_{ij} a+_i a+_j a_b a_a uses the SAME tensor as T2.
+  (`tensor_operator` cannot express this: it pairs upper tensor indices with
+  creators, so it would make a different tensor t^{ij}_{ab}.) Then the UCC generator
+  sigma = T - T^dagger works with the existing `bch`. Its series never terminates
+  (sigma contains de-excitations, which contract with each other), so orders 5, 6, ...
+  are real truncation choices; `bch` already accepts any order.
+- Performance of high-order BCH: [[H, T2], T2] takes 3.6 s; order 3-4 with T2 (and
+  UCC orders 5-6) has not been timed. Simplify's dummy-renaming search is factorial
+  in the number of dummies per space and is the likely bottleneck. Also possible:
+  projection-aware truncation (only build BCH terms that survive projection onto
+  rank n).
 
 ## OPEN
 - None.

@@ -36,3 +36,8 @@ API Documentation
    alqemi.fluctuation_potential
    alqemi.hamiltonian
    alqemi.cluster
+   alqemi.excitation
+   alqemi.deexcitation
+   alqemi.vacuum_expectation
+   alqemi.projection
+   alqemi.bch

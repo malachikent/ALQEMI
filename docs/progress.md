@@ -56,12 +56,17 @@
 ## Done (2026-11-24, after 0.1.0)
 - Released 0.1.0 (Steps 1-8): `main` fast-forwarded, tag `v0.1.0`, GitHub release. macOS/3.13 checked locally because GitHub's runner never started.
 
+- Step 9 spec and tests: `alqemi/tests/test_step9_projection.py` (73 checks). Free general indices in projections recorded as deferred (EPT/CPT).
+- Step 9 implemented: `excitation`, `deexcitation` (`builders.py`); `vacuum_expectation`, `projection` (`pipeline/project.py`); `bch` (`pipeline/bch.py`); public API, `docs/api.rst`, CHANGELOG. Derives the CCSD energy (5 terms) and the CCD doubles residual (18 terms).
+
 ## In progress
-- Step 9 (Fermi-vacuum projections) spec and tests written: `alqemi/tests/test_step9_projection.py` (73 checks, spec in its docstring). Not implemented yet.
+- Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: the Step 9 file fails to collect until Step 9 is implemented; with `--continue-on-collection-errors`, 812 pass and 8 fail (Step 7 checks for the five new public names).
+- `pytest alqemi`: 893 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 65 in step 7, 163 in step 8, 73 in step 9), 0 failing. About 38 s.
 
 ## Next step
-Implement Step 9. Later: einsum code generation, direct LaTeX printing (decision 13);
-fix the pytest deprecation warning about a class-scoped fixture.
+Choose Step 10. Candidates: einsum code generation (now has real equations to work
+on), direct LaTeX printing (decision 13), `adjoint()` for unitary CC, high-order BCH
+performance (DESIGN_DECISIONS.md, "Candidates"). Also: fix the pytest deprecation warning
+about a class-scoped fixture.

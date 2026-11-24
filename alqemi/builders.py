@@ -142,3 +142,25 @@ def _normal_order(ops: List[Op]) -> Tuple[List[Op], int]:
     creators = [op for op, f in zip(ops, flags) if f]
     annihilators = [op for op, f in zip(ops, flags) if not f]
     return creators + annihilators, sign
+
+
+# ---- excitations ----------------------------------------------------------------------
+_EXCITATION_VIRT = "abcdefg"
+_EXCITATION_OCC = "ijklmno"
+
+
+def excitation(n: int) -> Expr:
+    """tau_mu of rank n with free indices: a+_a a+_b .. a_j a_i (coefficient 1)."""
+    if not isinstance(n, int) or isinstance(n, bool) or not 1 <= n <= len(_EXCITATION_OCC):
+        raise ValueError(f"excitation rank must be an integer from 1 to 7, got {n!r}")
+    virt = [Index(x, V) for x in _EXCITATION_VIRT[:n]]
+    occ = [Index(x, O) for x in _EXCITATION_OCC[:n]]
+    ops = [cre(x) for x in virt] + [ann(x) for x in reversed(occ)]
+    return Expr((Term(1, (), (OpString(tuple(ops)),)),))
+
+
+def deexcitation(n: int, *, name: str = "l", pool: Optional[IndexPool] = None) -> Expr:
+    """Lambda_n = (1/n!)^2 sum l^{i1..in}_{a1..an} a+_{i1}..a+_{in} a_{an}..a_{a1}."""
+    if not isinstance(n, int) or n < 1:
+        raise ValueError(f"deexcitation rank must be a positive integer, got {n!r}")
+    return tensor_operator(name, [O] * n, [V] * n, pool=pool)
