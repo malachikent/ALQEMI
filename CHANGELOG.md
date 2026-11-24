@@ -19,6 +19,12 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 - Together these derive coupled-cluster equations, e.g. the CCSD energy and the
   18-term CCD doubles residual.
 
+### Changed
+- Faster, with identical results: Simplify only exchanges dummies with equal
+  name-free fingerprints ([[H, T2], T2]: 3.6 s -> 0.13 s), and projections drop
+  terms that change the occupied or virtual electron count (CCD residual:
+  3.5 s -> 0.4 s; CCSD energy derivation: ~9 s -> 0.3 s).
+
 ## [0.1.0] - 2026-11-24
 
 First release of ALQEMI v3, a rewrite of the earlier SymPy-based prototype:

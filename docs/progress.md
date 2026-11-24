@@ -61,12 +61,16 @@
 
 - BCH performance investigated (DESIGN_DECISIONS.md, "Step 10" and "Candidates"). Kept as Step 10: fingerprint-restricted Simplify search and occupation-count pruning in projections; recorded the rest.
 
+- Step 10 spec and tests: `alqemi/tests/test_step10_performance.py` (36 checks), brute-force referee `alqemi/tests/reference_simplify.py`.
+- Step 10 implemented: fingerprint-restricted like-term search in `pipeline/simplify.py`; occupation-count pruning in `pipeline/project.py`. Output identical to the brute-force Simplify; CCD-residual budget tightened from 4 s to 2 s so it detects a missing pruning.
+
 ## In progress
-- Step 10 (two exact speed-ups) spec and tests written: `alqemi/tests/test_step10_performance.py` (36 checks) and `alqemi/tests/reference_simplify.py` (brute-force referee). Not implemented yet: its 3 time budgets fail, everything else passes.
+- Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: 926 pass, 3 fail (the Step 10 time budgets).
+- `pytest alqemi`: 929 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 65 in step 7, 163 in step 8, 73 in step 9, 36 in step 10), 0 failing. About 29 s.
 
 ## Next step
-Implement Step 10. Then choose: einsum code generation, direct LaTeX printing
-(decision 13), or a recorded candidate (DESIGN_DECISIONS.md, "Candidates").
+Choose Step 11: einsum code generation, direct LaTeX printing (decision 13), or a
+recorded candidate (DESIGN_DECISIONS.md, "Candidates"). Also: fix the pytest
+deprecation warning about a class-scoped fixture.

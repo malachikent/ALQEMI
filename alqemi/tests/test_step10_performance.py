@@ -22,12 +22,12 @@ Simplify must give EXACTLY the output of the brute-force search it replaces
      (created - annihilated != 0 in either space), is dropped: it maps |HF> to an
      orthogonal state, so its expectation value is exactly 0.
 
-  Time budgets (about 10x slower than the implementation, so CI noise is safe;
+  Time budgets (several times the implementation's time, so CI noise is safe;
   the pre-Step-10 code exceeds each of them):
     - simplify of the raw [[H, T2], T2] (32 terms): under 0.5 s (was 1.7 s);
     - CCSD energy, projection(0, bch(H, T1 + T2, order=2)): under 3 s (was ~9 s);
     - CCD doubles residual, projection(2, .) of a prebuilt bch(H, T2, order=2):
-      under 4 s (about 7.6 s without the pruning, 3.5-7 s before Step 10).
+      under 2 s (0.43 s with the pruning, 3.5 s without it on an idle machine).
 """
 import time
 
@@ -195,4 +195,4 @@ def test_budget_ccsd_energy():
 def test_budget_ccd_residual_projection():
     hbar = bch(hamiltonian(), cluster(2), order=2)
     elapsed = _best_of(lambda: projection(2, hbar), repeats=1)
-    assert elapsed < 4.0
+    assert elapsed < 2.0

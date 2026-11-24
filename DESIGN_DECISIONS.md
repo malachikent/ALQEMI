@@ -362,12 +362,16 @@ dummies are renamed around free names). If needed: a `blocks(x)` helper returnin
 block (results are block-structured, as EPT writes them and codegen needs). Also
 possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free names.
 
-## Step 10 (spec 2026-11-24): two exact speed-ups
+## Step 10 (done 2026-11-24): two exact speed-ups
 - Spec + tests: `alqemi/tests/test_step10_performance.py` (36 checks, spec in its
   docstring). Referee: `alqemi/tests/reference_simplify.py`, the brute-force Simplify
   of Steps 6/8 kept verbatim; the fast Simplify must give EXACTLY its output.
-  Validated against a prototype: 929 tests pass; 8 of 9 planted bugs caught (the miss,
-  pruning only by occupied count, changes speed slightly, never results).
+  Validated against a prototype: 929 tests pass; 8 of 9 planted bugs caught. The real
+  code gives the same 8 of 9. The miss, pruning only by the occupied count, is
+  equivalent in practice: H, T, Lambda and the projectors conserve the total electron
+  number, so an unchanged occupied count implies an unchanged virtual count; it
+  changes neither results nor timing (CCD projection 0.43 s either way). Full suite
+  38 s -> 29 s.
 - Profiling (2026-11-24): 96% of [[H, T2], T2] was Simplify's like-term search
   (41,472 renamings for 32 terms); projections spent their time building Terms for
   split copies that are zero.
@@ -380,7 +384,9 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   occupied or the virtual electron count; they map |HF> to an orthogonal state, so
   they are exactly 0 (particle-number conservation, not Wick).
   CCD residual projection: 3.5 s -> 0.44 s; CCSD energy derivation: ~9 s -> 0.3 s.
-- Time budgets in the tests are about 10x the measured times.
+- Time budgets in the tests are several times the measured times (the CCD-residual
+  budget was tightened from 4 s to 2 s at implementation: unpruned it takes 3.5 s on
+  an idle machine, so 4 s could not detect a missing pruning).
 
 ## Candidates (not scheduled)
 - `adjoint(x)` for unitary CC: reverse and adjoint every operator string, keep real

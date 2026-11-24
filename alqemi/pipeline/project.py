@@ -5,8 +5,10 @@ projection is a vacuum expectation value. It is evaluated in four steps:
 
 1. ``run``: brackets are expanded.
 2. Split: each summed GENERAL index becomes an OCC copy and a VIRT copy of its term
-   (DESIGN_DECISIONS, Step 9). Afterwards every operator kills exactly one side of
-   the vacuum: a_a (virtual) and a+_i (occupied) kill |HF>; a+_a and a_i kill <HF|.
+   (DESIGN_DECISIONS, Step 9). Copies that change the number of occupied or virtual
+   electrons are dropped at once: they are exactly 0 (Step 10). Afterwards every
+   operator kills exactly one side of the vacuum: a_a (virtual) and a+_i (occupied)
+   kill |HF>; a+_a and a_i kill <HF|.
 3. Absorb killers. For the rightmost |HF>-killer K of a string X K Y,
        <HF| X K Y |HF> = <HF| X [K, Y](+) |HF>
    because K|HF> = 0: an anticommutator if len(Y) is odd, else a commutator, so the
@@ -44,7 +46,9 @@ def vacuum_expectation(x) -> Expr:
         if general:
             raise ValueError(f"free general index {general[0]}: give it the OCC or VIRT space")
     pool = IndexPool()
-    pending: List[Term] = [copy for term in expr for copy in _split(term, pool)]
+    pending: List[Term] = [
+        copy for term in expr for copy in _split(term, pool) if _conserves_occupations(copy)
+    ]
     done: List[Term] = []
     while pending:
         following: List[Term] = []
@@ -94,6 +98,20 @@ def _split(term: Term, pool: IndexPool) -> List[Term]:
         # Term.rename keeps spaces; here narrowing the space is the point.
         copies.append(term._rename(mapping))
     return copies
+
+
+def _conserves_occupations(term: Term) -> bool:
+    """False if the operators change the occupied or the virtual electron count.
+
+    |HF> has definite occupied and virtual counts, so such a string maps it to an
+    orthogonal state and the term's expectation value is exactly 0 (particle-number
+    conservation; no Wick's theorem).
+    """
+    change = {Space.OCC: 0, Space.VIRT: 0}
+    for string in term.factors:
+        for op in string:
+            change[op.index.space] += 1 if op.kind is Kind.CRE else -1
+    return change[Space.OCC] == 0 and change[Space.VIRT] == 0
 
 
 def _kills_ket(op: Op) -> bool:

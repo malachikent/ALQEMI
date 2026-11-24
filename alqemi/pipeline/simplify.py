@@ -10,6 +10,9 @@ never changed (decision 8). Two terms are alike when they are equal up to
   - reordering operators within a run of adjacent creators or of adjacent
     annihilators, with the permutation's sign (decision 14: exact, never a delta).
 A term equal to minus itself is zero.
+
+The like-term search tries renamings of the dummies, but only among dummies with
+equal name-free fingerprints (Step 10); see ``_fingerprints``.
 """
 from __future__ import annotations
 
@@ -69,27 +72,28 @@ Namer = Callable[[Index], IndexKey]
 def _like_key(term: Term) -> Optional[Tuple[tuple, int]]:
     """(key, sign) with term = sign * coeff * (the canonical form named by key); None if 0.
 
-    The coefficient is not part of the key. Every renaming of dummies within each
-    space is tried and the smallest key kept (n! per space; terms have few dummies).
-    Operator runs and tensors are put in canonical order for each renaming. If the
-    smallest key is reached with both signs, the term equals minus itself.
+    The coefficient is not part of the key. Dummies are grouped by fingerprint;
+    every renaming within each group is tried and the smallest key kept. Operator
+    runs and tensors are put in canonical order for each renaming. If the smallest
+    key is reached with both signs, the term equals minus itself.
     """
-    by_space: Dict[Space, List[Index]] = {}
+    prints = _fingerprints(term)
+    groups: Dict[tuple, List[Index]] = {}
     for d in sorted(term.summed, key=lambda ix: (ix.name, ix.space.value)):
-        by_space.setdefault(d.space, []).append(d)
-    spaces = list(by_space)
+        groups.setdefault(prints[d], []).append(d)
+    fingerprints = sorted(groups)  # a name-free order of the groups
     deltas = [s for s in term.scalars if isinstance(s, Delta)]
     tensors = [s for s in term.scalars if isinstance(s, Tensor)]
 
     best = None
     signs: Set[int] = set()
-    for orders in itertools.product(*(itertools.permutations(by_space[s]) for s in spaces)):
-        # Placeholder names start with "\0", so they can never equal a real name.
-        placeholder = {
-            d: ("\0" + str(n), space.value)
-            for space, order in zip(spaces, orders)
-            for n, d in enumerate(order)
-        }
+    for orders in itertools.product(*(itertools.permutations(groups[f]) for f in fingerprints)):
+        # Placeholders are numbered through the groups in fingerprint order. They
+        # start with "\0", so they can never equal a real name.
+        placeholder: Dict[Index, IndexKey] = {}
+        for order in orders:
+            for d in order:
+                placeholder[d] = ("\0" + str(len(placeholder)).zfill(4), d.space.value)
 
         def name(ix: Index) -> IndexKey:
             return placeholder.get(ix, (ix.name, ix.space.value))
@@ -122,6 +126,43 @@ def _like_key(term: Term) -> Optional[Tuple[tuple, int]]:
     if len(signs) > 1:
         return None
     return best, signs.pop()
+
+
+def _fingerprints(term: Term) -> Dict[Index, tuple]:
+    """For each dummy: (space, sorted occurrences), with no dummy names in it.
+
+    An occurrence is one of
+      - an operator: ("op", kind, index of its run of same-kind operators);
+      - a delta: ("delta", the partner's name if it is free, else "dummy", space);
+      - a tensor: ("tensor", name, swap, ranks, side); side is "upper"/"lower", or
+        "either" when the tensor has a swap symmetry.
+    Each part survives every rewrite the like-term search allows (renaming dummies,
+    sorting a run, a tensor's symmetries), so a renaming that maps a term onto a like
+    term, or onto minus itself, maps every dummy to one with the same fingerprint.
+    Restricting the search to such renamings therefore changes no result.
+    """
+    where: Dict[Index, list] = {d: [] for d in term.summed}
+    for string in term.factors:
+        run, kind = -1, None
+        for op in string:
+            if op.kind is not kind:
+                run, kind = run + 1, op.kind
+            if op.index in where:
+                where[op.index].append(("op", op.kind.value, run))
+    for s in term.scalars:
+        if isinstance(s, Delta):
+            for ix, partner in ((s.p, s.q), (s.q, s.p)):
+                if ix in where:
+                    label = "dummy" if partner in where else partner.name
+                    where[ix].append(("delta", label, partner.space.value))
+        elif isinstance(s, Tensor):
+            for side, group in (("upper", s.upper), ("lower", s.lower)):
+                if s.swap is not Swap.NONE:
+                    side = "either"  # the swap exchanges the groups
+                for ix in group:
+                    if ix in where:
+                        where[ix].append(("tensor", s.name, s.swap.value, len(s.upper), len(s.lower), side))
+    return {d: (d.space.value, tuple(sorted(occ))) for d, occ in where.items()}
 
 
 def _sorted_with_sign(keys: Sequence[tuple]) -> Optional[Tuple[tuple, int]]:
