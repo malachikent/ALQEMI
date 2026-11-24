@@ -79,13 +79,21 @@
 - All three Step 10 budgets are now relative (Simplify vs the brute-force reference;
   CCSD energy vs the brute-force Simplify); no fixed time limits remain.
 
+- Step 12 spec and tests: `alqemi/tests/test_step12_spin.py` (61 checks), UHF spin
+  integration (`Spin`, `spin_integrate`) and spin-block code generation matching the
+  user's 21-block `eris`. Step 7's PUBLIC_API gains `Spin` and `spin_integrate`.
+  Private cross-check against the user's hand-written UHF functions: all agree.
+
 ## In progress
-- Nothing is half-done.
+- Step 12: spec and tests written; not implemented yet, so `test_step12_spin.py` and
+  the Step 7 public-API tests fail until it is.
 
 ## Tests
 - `pytest alqemi`: 1006 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 66 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11), 0 failing. About 35-40 s.
 
 ## Next step
-Choose Step 12: UHF spin integration (DESIGN_DECISIONS.md, "Planned"), direct LaTeX
-printing (decision 13), deltas in code generation, or a recorded candidate. Also: fix the pytest deprecation warning
+Implement Step 12 (core/indices.py Spin, Simplify keys, pipeline/spin.py,
+codegen spin blocks, public API, docs/api.rst, CHANGELOG). Later: direct LaTeX printing
+(decision 13, printing BCH factors explicitly), deltas in code generation, or a
+recorded candidate. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

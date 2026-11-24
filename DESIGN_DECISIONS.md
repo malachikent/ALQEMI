@@ -434,7 +434,36 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
 - `opt_einsum` is in the test extra; its numeric test is skipped when it is not
   installed. The module itself imports no numpy.
 
-## Planned: spin integration for UHF (later step, after Step 11)
+## Step 12 (spec 2026-11-24): spin integration for UHF
+- Spec + tests: `alqemi/tests/test_step12_spin.py` (61 checks, spec in its
+  docstring). Validated against a prototype: 1069 tests pass; 15 of 15 planted bugs
+  caught. Values on a UHF-like model (3a + 2b occupied, 2a + 3b virtual; integrals
+  from random real (pq|rs)): every spin block equals the spin-orbital result at its
+  spins, and generated code reads only the user's 21 ERI + 6 Fock blocks.
+- Design: `Index` gains `spin` (Spin.ALPHA / BETA / None), part of equality, never
+  parsed from the name; Simplify puts spin in every key and fingerprint and names
+  alpha dummies in upper case. `spin_integrate(expr)` works on projected,
+  tensor-only terms: free indices get the canonical spin blocks (alpha before beta,
+  Sz conserved: OOVV, OoVv, oovv; OV, ov; "" for scalars), every summed index an
+  alpha and a beta copy, copies with a spin-changing tensor are dropped (exact by
+  spin conservation), then Simplify. No Wick, no new algebra.
+- Code generation: block letters O/o, V/v; amplitudes named "{name}{rank}_{block}"
+  (t2_OoVv[i,J,a,B]); integrals canonicalized over antisymmetry, the swap, and, for
+  opposite-spin two-electron integrals only (there <pq||rs> = <pq|rs>), the
+  REAL-orbital symmetry <pq|rs> = <rq|ps>, with spins paired electron by electron.
+  This lands every spin-conserving <pq||rs> on exactly the user's 21 blocks; without
+  the real-orbital images it produced blocks such as g_OvVo. Assumes real orbitals,
+  as the user's eris does.
+- Private cross-check (2026-11-24, scratchpad only, never committed) against the
+  user's hand-written uhf_com_functions.py: all 34 single-ordering functions that are
+  plain commutators ([Phi,T1], [Phi,T2], [[Phi,T1],T2] for singles and doubles, all
+  spin blocks) match ALQEMI exactly; all 63 driver cases (2-, 3- and 4-fold nested
+  commutators, TT/TR, TTT/TTR/RTT/TAR, TTTT/TTTR/TTRR/TTBR/TAAR/TARR/TABR) equal the
+  polarized BCH term exactly (factors 1/2, 1/6, 1/24, ...). No mathematical error
+  found. Reported to the user: build_doubles_2com_T1_drv and
+  build_doubles_4com_T1_drv call functions that are not defined in the file.
+
+## Spin integration: background (recorded before Step 12)
 ALQEMI derives spin-orbital equations. The user's UHF codes store spin blocks
 (t2_OOVV / t2_OoVv / t2_oovv for aa / ab / bb). Turning one spin-orbital equation
 into its spin-block equations is a separate derivation step, reserved for UHF
@@ -446,11 +475,27 @@ from chemist's (pq|rs) as physicist's blocks):
 - Same-spin blocks are antisymmetrized <pq||rs>, e.g. g_OOVV[i,j,a,b] =
   (ia|jb) - (ib|ja); mixed-spin blocks are plain <pq|rs> (no exchange), e.g.
   g_OoVv[I,j,A,b] = <Ij|Ab>.
-- 20 blocks: aa and bb each OOOO, OOOV, OOVV, OVOV, OVVV, VVVV; ab: OoOo, OoOv,
+- 21 blocks (6 + 6 + 9): aa and bb each OOOO, OOOV, OOVV, OVOV, OVVV, VVVV; ab: OoOo, OoOv,
   oOoV, OoVv, OvOv, oVoV, OvVv, oVvV, VvVv. Occupied-first outranks alpha-first
   (OvOv and oVoV are both kept; never vOvO).
 - In this convention g_OOVV is the alpha-alpha block, not the spin-orbital one, so
   Step 11's spin-orbital code is for spin-orbital (GHF-style) tests only.
+Settled with the user (2026-11-24), from their hand-written UHF CC/CP code:
+- Amplitudes and residuals: alpha at positions 1 and 3, t2_OoVv[i,J,a,B],
+  t1_OV[i,a], t1_ov[i,a]; only alpha-beta mixed blocks, never beta-alpha (the
+  beta-alpha block is the alpha-beta one transposed, no sign: exact by antisymmetry).
+  Residual blocks use the same names (r2_OOVV, r2_OoVv, r2_oovv, r1_OV, r1_ov).
+- One generated function per spin block, taking only the blocks it uses.
+- Generated functions are the "build" functions for ONE commutator ordering with
+  distinct amplitude arguments (e.g. <mu|[[Phi, T1], R1]|HF> with t1_*, r1_*). The
+  user's hand-written drivers stay: they dispatch on object identity because in
+  cluster perturbation theory different perturbative orders of the amplitudes are
+  different arrays. ALQEMI does not generate drivers.
+- No BCH factors are added to generated code: a function computes exactly the
+  expression it is given (bch includes 1/k!, a bare commutator does not). LaTeX
+  printing (later) must show the factors whenever they are present.
+- The user's hand-written functions may be used as a numerical cross-check in the
+  PRIVATE scratchpad only; never committed. Any discrepancy is reported to the user.
 
 ## Candidates (not scheduled)
 - `adjoint(x)` for unitary CC: reverse and adjoint every operator string, keep real
