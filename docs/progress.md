@@ -76,11 +76,14 @@
   unpruned on the same machine, at least 3x), since the fixed 2 s failed on slow
   runners; `opt_einsum` added to the CI conda environment (`devtools/conda-envs/test_env.yaml`).
 
+- All three Step 10 budgets are now relative (Simplify vs the brute-force reference;
+  CCSD energy vs the brute-force Simplify); no fixed time limits remain.
+
 ## In progress
 - Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: 1006 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 66 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11), 0 failing. About 31 s.
+- `pytest alqemi`: 1006 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 66 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11), 0 failing. About 35-40 s.
 
 ## Next step
 Choose Step 12: UHF spin integration (DESIGN_DECISIONS.md, "Planned"), direct LaTeX

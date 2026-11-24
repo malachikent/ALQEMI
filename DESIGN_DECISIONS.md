@@ -392,6 +392,12 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   The test now times the projection with and without the pruning on the same
   machine and requires at least 3x (about 8x locally); it also checks both give
   the same result. Verified to fail when the pruning is removed.
+- The other two budgets made relative too (2026-11-24, after 0.2.0): simplify of
+  [[H, T2], T2] at least 5x faster than the brute-force reference (about 33x
+  locally); the CCSD energy derivation at least 4x faster than with the
+  brute-force Simplify in run, bch and project (about 11x). Both check the results
+  agree, and both fail when the fingerprint restriction is removed. No fixed time
+  limits remain.
 
 ## Step 11 (done 2026-11-24): einsum code generation
 - Spec + tests: `alqemi/tests/test_step11_codegen.py` (76 checks, spec in its

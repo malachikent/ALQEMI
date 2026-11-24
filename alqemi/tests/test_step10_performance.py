@@ -22,10 +22,14 @@ Simplify must give EXACTLY the output of the brute-force search it replaces
      (created - annihilated != 0 in either space), is dropped: it maps |HF> to an
      orthogonal state, so its expectation value is exactly 0.
 
-  Time budgets (several times the implementation's time, so CI noise is safe;
-  the pre-Step-10 code exceeds each of them):
-    - simplify of the raw [[H, T2], T2] (32 terms): under 0.5 s (was 1.7 s);
-    - CCSD energy, projection(0, bch(H, T1 + T2, order=2)): under 3 s (was ~9 s);
+  Time budgets: all RELATIVE, each speed-up timed against the same work without it
+  on the same machine, so runner speed cancels; each also checks both agree. (Fixed
+  limits failed on slow CI runners with correct results.)
+    - simplify of the raw [[H, T2], T2] (32 terms): at least 5x faster than the
+      brute-force reference Simplify (about 33x locally: 0.05 s vs 1.6 s);
+    - CCSD energy, projection(0, bch(H, T1 + T2, order=2)): at least 4x faster than
+      the same derivation with the brute-force Simplify in run, bch and project
+      (about 11x locally: 0.3 s vs 3.5 s);
     - CCD doubles residual, projection(2, .) of a prebuilt bch(H, T2, order=2): a
       RELATIVE check, at least 3x faster than the same projection with the pruning
       switched off, timed on the same machine (0.43 s vs 3.5 s locally, about 8x).
@@ -45,7 +49,9 @@ from alqemi.core.tensor import Swap, Tensor
 from alqemi.pipeline.bch import bch
 from alqemi.pipeline.delta_evaluate import delta_evaluate
 from alqemi.pipeline.identity_expand import identity_expand
+from alqemi.pipeline import bch as bch_module
 from alqemi.pipeline import project as project_module
+from alqemi.pipeline import run as run_module
 from alqemi.pipeline.project import projection, vacuum_expectation
 from alqemi.pipeline.run import run
 from alqemi.pipeline.simplify import simplify
@@ -184,28 +190,34 @@ def _best_of(f, repeats=2):
     return best
 
 
+def _timed(f):
+    t = time.perf_counter()
+    result = f()
+    return result, time.perf_counter() - t
+
+
 def test_budget_simplify_double_commutator():
     x = raw(CORPUS["[[H,T2],T2]"]())
     assert len(x) == 32
-    assert _best_of(lambda: simplify(x)) < 0.5
+    fast = _best_of(lambda: simplify(x))
+    brute_force = _best_of(lambda: reference_simplify(x), repeats=1)
+    assert brute_force >= 5 * fast
 
 
-def test_budget_ccsd_energy():
+def test_budget_ccsd_energy(monkeypatch):
     h, t = hamiltonian(), cluster(1) + cluster(2)
-    elapsed = _best_of(lambda: projection(0, bch(h, t, order=2)), repeats=1)
-    assert elapsed < 3.0
+    fast, fast_time = _timed(lambda: projection(0, bch(h, t, order=2)))
+    for module in (run_module, bch_module, project_module):
+        monkeypatch.setattr(module, "simplify", reference_simplify)
+    slow, slow_time = _timed(lambda: projection(0, bch(h, t, order=2)))
+    assert fast == slow
+    assert slow_time >= 4 * fast_time
 
 
 def test_budget_ccd_residual_projection(monkeypatch):
     hbar = bch(hamiltonian(), cluster(2), order=2)
-
-    def timed():
-        t = time.perf_counter()
-        result = projection(2, hbar)
-        return result, time.perf_counter() - t
-
-    pruned, pruned_time = timed()
+    pruned, pruned_time = _timed(lambda: projection(2, hbar))
     monkeypatch.setattr(project_module, "_conserves_occupations", lambda term: True)
-    unpruned, unpruned_time = timed()
+    unpruned, unpruned_time = _timed(lambda: projection(2, hbar))
     assert pruned == unpruned  # the pruning is exact
     assert unpruned_time >= 3 * pruned_time
