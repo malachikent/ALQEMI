@@ -434,10 +434,10 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
 - `opt_einsum` is in the test extra; its numeric test is skipped when it is not
   installed. The module itself imports no numpy.
 
-## Step 12 (spec 2026-11-24): spin integration for UHF
+## Step 12 (done 2026-11-24): spin integration for UHF
 - Spec + tests: `alqemi/tests/test_step12_spin.py` (61 checks, spec in its
   docstring). Validated against a prototype: 1069 tests pass; 15 of 15 planted bugs
-  caught. Values on a UHF-like model (3a + 2b occupied, 2a + 3b virtual; integrals
+  caught; the real code gives the same (1069 pass, 15 of 15). Values on a UHF-like model (3a + 2b occupied, 2a + 3b virtual; integrals
   from random real (pq|rs)): every spin block equals the spin-orbital result at its
   spins, and generated code reads only the user's 21 ERI + 6 Fock blocks.
 - Design: `Index` gains `spin` (Spin.ALPHA / BETA / None), part of equality, never

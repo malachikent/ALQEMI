@@ -10,6 +10,18 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+### Added
+- Spin integration for UHF: `Spin` and `Index(..., spin=...)`; `spin_integrate(expr)`
+  splits a projected spin-orbital equation into its canonical alpha/beta blocks
+  (OOVV, OoVv, oovv; OV, ov; one block for an energy). Exact by spin conservation;
+  no Wick's theorem.
+- `einsum_code` writes spin-block code: amplitudes `t2_OoVv[i,J,a,B]`, `t1_ov`, ...;
+  integrals matched to the 21 UHF ERI blocks (`moeris.g_OoVv`, ...) and the 6 Fock
+  blocks, assuming real orbitals. Spin-orbital output is unchanged.
+
+### Changed
+- Simplify keeps alpha and beta dummies apart and names alpha dummies in upper case.
+
 ## [0.2.0] - 2026-11-24
 
 ### Added

@@ -42,3 +42,5 @@ API Documentation
    alqemi.projection
    alqemi.bch
    alqemi.einsum_code
+   alqemi.Spin
+   alqemi.spin_integrate

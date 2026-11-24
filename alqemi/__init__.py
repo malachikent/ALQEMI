@@ -6,7 +6,7 @@ Second-quantized commutator algebra by HJO's operator identities (no Wick's theo
     >>> P, Q, R, S = (Index(x) for x in "PQRS")
     >>> result = run(comm(cre(P) * ann(Q), cre(R) * ann(S)))   # HJO (1.8.14)
 """
-from alqemi.core.indices import Index, Space
+from alqemi.core.indices import Index, Space, Spin
 from alqemi.core.operators import Kind, Op, OpString, ann, cre
 from alqemi.core.expr import (
     Bracket,
@@ -28,6 +28,7 @@ from alqemi.pipeline.run import run
 from alqemi.pipeline.project import projection, vacuum_expectation
 from alqemi.pipeline.bch import bch
 from alqemi.codegen.einsum import einsum_code
+from alqemi.pipeline.spin import spin_integrate
 from alqemi.rules.hjo import UnsupportedBracket
 from alqemi.builders import (
     cluster,
@@ -46,7 +47,7 @@ except ImportError:  # e.g. a fresh clone that was never installed
 
 __all__ = [
     # symbols
-    "Space", "Index", "Kind", "Op", "OpString", "cre", "ann",
+    "Space", "Spin", "Index", "Kind", "Op", "OpString", "cre", "ann",
     # expressions
     "Delta", "ElementaryBracket", "BracketKind", "Bracket", "comm", "acomm",
     "Term", "Expr", "IndexPool",
@@ -62,4 +63,6 @@ __all__ = [
     "excitation", "deexcitation", "vacuum_expectation", "projection", "bch",
     # code generation
     "einsum_code",
+    # spin integration
+    "spin_integrate",
 ]

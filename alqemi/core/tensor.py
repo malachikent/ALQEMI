@@ -47,7 +47,7 @@ class Tensor:
         return self.upper + self.lower
 
     def _sort_key(self) -> tuple:
-        key = lambda ix: (ix.name, ix.space.value)
+        key = lambda ix: (ix.name, ix.space.value, "" if ix.spin is None else ix.spin.value)
         return (2, self.name, self.swap.value, tuple(map(key, self.upper)), tuple(map(key, self.lower)))
 
     def _rename(self, mapping: Mapping[Index, Index]) -> Tensor:

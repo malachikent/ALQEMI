@@ -30,7 +30,7 @@ def _as_fraction(c: Coeff) -> Fraction:
 
 
 def _index_key(ix: Index) -> Tuple[str, str]:
-    return (ix.name, ix.space.value)
+    return (ix.name, ix.space.value, "" if ix.spin is None else ix.spin.value)
 
 
 def _names(indices: Iterable[Index]) -> Set[str]:
@@ -264,6 +264,8 @@ class Term:
                 raise TypeError(f"rename maps Index to Index, got {src!r} -> {dst!r}")
             if src.space is not dst.space:
                 raise ValueError(f"rename must keep the space: {src!r} -> {dst!r}")
+            if src.spin is not dst.spin:
+                raise ValueError(f"rename must keep the spin: {src!r} -> {dst!r}")
         return self._rename(mapping)
 
     def _rename(self, mapping: Mapping[Index, Index]) -> Term:
@@ -380,7 +382,7 @@ def freshen_dummies(
     mapping: Dict[Index, Index] = {}
     for ix in sorted(target._bound(), key=_index_key):
         if ix.name in clash:
-            new = pool.fresh(ix.space, avoid)
+            new = Index(pool.fresh(ix.space, avoid).name, ix.space, ix.spin)
             avoid.add(new.name)
             mapping[ix] = new
     return target.rename(mapping) if mapping else target

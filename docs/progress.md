@@ -84,16 +84,18 @@
   user's 21-block `eris`. Step 7's PUBLIC_API gains `Spin` and `spin_integrate`.
   Private cross-check against the user's hand-written UHF functions: all agree.
 
+- Step 12 implemented: `Spin` and `Index.spin` (`core/indices.py`), spin-aware keys in
+  `core/expr.py`, `core/tensor.py` and Simplify, `pipeline/spin.py` (`spin_integrate`),
+  spin blocks in `codegen/einsum.py`; public API, `docs/api.rst`, CHANGELOG. The private
+  cross-check against the user's hand-written UHF functions still agrees.
+
 ## In progress
-- Step 12: spec and tests written; not implemented yet, so `test_step12_spin.py` and
-  the Step 7 public-API tests fail until it is.
+- Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: 1006 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 66 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11), 0 failing. About 35-40 s.
+- `pytest alqemi`: 1069 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 68 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12), 0 failing. About 40-45 s.
 
 ## Next step
-Implement Step 12 (core/indices.py Spin, Simplify keys, pipeline/spin.py,
-codegen spin blocks, public API, docs/api.rst, CHANGELOG). Later: direct LaTeX printing
-(decision 13, printing BCH factors explicitly), deltas in code generation, or a
-recorded candidate. Also: fix the pytest deprecation warning
+Choose Step 13: direct LaTeX printing (decision 13; print BCH factors explicitly),
+deltas in code generation, or a recorded candidate (DESIGN_DECISIONS.md, "Candidates"). Also: fix the pytest deprecation warning
 about a class-scoped fixture.

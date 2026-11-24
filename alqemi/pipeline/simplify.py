@@ -9,7 +9,8 @@ never changed (decision 8). Two terms are alike when they are equal up to
     and its Swap), with the sign they bring, and
   - reordering operators within a run of adjacent creators or of adjacent
     annihilators, with the permutation's sign (decision 14: exact, never a delta).
-A term equal to minus itself is zero.
+A term equal to minus itself is zero. Dummies are only exchanged within the same
+space and spin (Step 12); alpha dummies are relabelled with upper-case letters.
 
 The like-term search tries renamings of the dummies, but only among dummies with
 equal name-free fingerprints (Step 10); see ``_fingerprints``.
@@ -21,7 +22,7 @@ from fractions import Fraction
 from typing import Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 from alqemi.core.expr import Bracket, Delta, ElementaryBracket, Expr, Term, as_expr
-from alqemi.core.indices import Index, Space
+from alqemi.core.indices import Index, Space, Spin
 from alqemi.core.operators import OpString
 from alqemi.core.tensor import Swap, Tensor
 
@@ -65,7 +66,7 @@ def relabel_dummies(x) -> Expr:
 
 
 # ---- like terms -------------------------------------------------------------------
-IndexKey = Tuple[str, str]
+IndexKey = Tuple[str, str, str]
 Namer = Callable[[Index], IndexKey]
 
 
@@ -79,7 +80,7 @@ def _like_key(term: Term) -> Optional[Tuple[tuple, int]]:
     """
     prints = _fingerprints(term)
     groups: Dict[tuple, List[Index]] = {}
-    for d in sorted(term.summed, key=lambda ix: (ix.name, ix.space.value)):
+    for d in sorted(term.summed, key=_spin_key):
         groups.setdefault(prints[d], []).append(d)
     fingerprints = sorted(groups)  # a name-free order of the groups
     deltas = [s for s in term.scalars if isinstance(s, Delta)]
@@ -93,10 +94,10 @@ def _like_key(term: Term) -> Optional[Tuple[tuple, int]]:
         placeholder: Dict[Index, IndexKey] = {}
         for order in orders:
             for d in order:
-                placeholder[d] = ("\0" + str(len(placeholder)).zfill(4), d.space.value)
+                placeholder[d] = ("\0" + str(len(placeholder)).zfill(4), d.space.value, _spin(d))
 
         def name(ix: Index) -> IndexKey:
-            return placeholder.get(ix, (ix.name, ix.space.value))
+            return placeholder.get(ix, (ix.name, ix.space.value, _spin(ix)))
 
         sign = 1
         string_keys = []
@@ -154,7 +155,7 @@ def _fingerprints(term: Term) -> Dict[Index, tuple]:
             for ix, partner in ((s.p, s.q), (s.q, s.p)):
                 if ix in where:
                     label = "dummy" if partner in where else partner.name
-                    where[ix].append(("delta", label, partner.space.value))
+                    where[ix].append(("delta", label, partner.space.value, _spin(partner)))
         elif isinstance(s, Tensor):
             for side, group in (("upper", s.upper), ("lower", s.lower)):
                 if s.swap is not Swap.NONE:
@@ -162,7 +163,7 @@ def _fingerprints(term: Term) -> Dict[Index, tuple]:
                 for ix in group:
                     if ix in where:
                         where[ix].append(("tensor", s.name, s.swap.value, len(s.upper), len(s.lower), side))
-    return {d: (d.space.value, tuple(sorted(occ))) for d, occ in where.items()}
+    return {d: (d.space.value, _spin(d), tuple(sorted(occ))) for d, occ in where.items()}
 
 
 def _sorted_with_sign(keys: Sequence[tuple]) -> Optional[Tuple[tuple, int]]:
@@ -231,20 +232,30 @@ def _relabel_term(term: Term, taken_by_free: Set[str]) -> Term:
     used = set(taken_by_free)
     mapping: Dict[Index, Index] = {}
     for dummy in order:
-        new = _next_name(dummy.space, used)
+        new = _next_name(dummy.space, used, upper=dummy.spin is Spin.ALPHA)
         used.add(new)
-        mapping[dummy] = Index(new, dummy.space)
+        mapping[dummy] = Index(new, dummy.space, dummy.spin)
     return term.rename(mapping) if mapping else term
 
 
-def _next_name(space: Space, used: Set[str]) -> str:
+def _next_name(space: Space, used: Set[str], upper: bool = False) -> str:
+    """The first unused textbook letter of the space; upper case for alpha dummies."""
+    case = str.upper if upper else str
     for letter in LETTERS[space]:
-        if letter not in used:
-            return letter
+        if case(letter) not in used:
+            return case(letter)
     n = 1
-    while f"{FALLBACK_PREFIX[space]}{n}" in used:
+    while f"{case(FALLBACK_PREFIX[space])}{n}" in used:
         n += 1
-    return f"{FALLBACK_PREFIX[space]}{n}"
+    return f"{case(FALLBACK_PREFIX[space])}{n}"
+
+
+def _spin(ix: Index) -> str:
+    return "" if ix.spin is None else ix.spin.value
+
+
+def _spin_key(ix: Index) -> tuple:
+    return (ix.name, ix.space.value, _spin(ix))
 
 
 # ---- input check -------------------------------------------------------------------
