@@ -7,7 +7,8 @@ Source: Helgaker, Jørgensen & Olsen (HJO), Ch. 1 (Helgaker_excerpt.pdf in this 
 
 1. **No Wick's theorem, anywhere.** Do not use `sympy.physics.secondquant.Commutator`
    (its constructor reorders arguments and calls `wicks()` for two single fermion
-   operators) or `wicks`. SymPy may be used only for final printing.
+   operators) or `wicks`. (Originally SymPy was allowed for final printing; superseded
+   by decision 13.)
 2. **Own immutable core.** Frozen dataclasses: every rewrite returns new objects, so
    nothing simplifies behind our back and every step can be logged. Exact
    `fractions.Fraction` coefficients.
@@ -63,6 +64,14 @@ Source: Helgaker, Jørgensen & Olsen (HJO), Ch. 1 (Helgaker_excerpt.pdf in this 
     Dummies are relabelled to textbook letters (occ i, j, k, l, ...; virt a, b, c, d, ...;
     general p, q, r, s, ...) only once, at the end (Simplify or final printing). Free
     indices are never relabelled.
+
+## SETTLED (2026-11-24)
+
+13. **No SymPy in v3, including printing.** SymPy's `Add`/`Mul` sort their arguments,
+    which would undo decision 8 and Simplify's first-occurrence term order, and its
+    `KroneckerDelta` evaluates itself, so the printer would be doing math. ALQEMI prints
+    text and LaTeX directly from its own objects. An optional `to_sympy()` converter for
+    downstream algebra may be added later; it would never be part of the pipeline.
 
 ## Golden results (all verified by the oracle)
 (1.8.11), (1.8.12), (1.8.14), (1.8.15), (1.8.16), (1S.2.4). Property for later steps
@@ -199,6 +208,48 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
   simplify to exactly 0.
 - Spec + tests: `alqemi/tests/test_step6_simplify.py` (55 checks). Validated against a
   throwaway reference implementation; all 15 planted bugs caught.
+
+## Step 7 (spec 2026-11-24): public API, legacy cleanup, packaging
+- No new mathematics. Spec + tests: `alqemi/tests/test_step7_package.py` (53 checks).
+  Validated against a throwaway reference implementation; all 21 planted bugs caught.
+- Public API: `alqemi.__all__` is exactly the Step 1-6 user-facing names (symbols,
+  expressions, `IndexPool`, the pipeline stages, `run`, the two errors). Internals
+  (`as_expr`, `multiply`, `RULES`, `select_rule`, ...) stay in their submodules.
+  `__version__` falls back to "0+unknown" without `_version.py`. `import alqemi` loads
+  neither sympy nor numpy.
+- Removed: `alqemi.py` (cookiecutter `canvas`), `sample.py`, `algebra/`, `data/`,
+  `tests/legacy/`. Kept as reference until Step 8 rebuilds them: `core/cluster.py`
+  (legacy FluctuationPotential) and `core/tools.py` (DoubleBar); nothing imports them.
+- Kept: `codegen/`, the future home of einsum code generation (see Step 8 notes).
+- Packaging: no runtime dependencies (numpy moves to the `test` extra, sympy goes);
+  `requires-python >=3.11`; package discovery `where=["."], include=["alqemi*"]`
+  (the cookiecutter's `where=["alqemi"]` installed `core`, `pipeline`, ... as top-level
+  packages). `docs/api.rst` lists the public API; README badges point at
+  malachikent/ALQEMI. CI runs on pushes to every branch and on PRs to main.
+- The rest of the cookiecutter (versioningit, CI, docs, conda test env, LICENSE,
+  py.typed) stays: it is what ships the package. PyPI upload on a version tag and a
+  conda-forge recipe come later.
+
+## Step 8 (planned): tensors and coupled-cluster operators
+- `Tensor`: a commuting scalar with a name, upper and lower indices and a declared
+  symmetry. Antisymmetry within the upper and within the lower indices is always on
+  (a repeated index there gives 0). Whether bra and ket may be swapped is per tensor:
+  on by default for f and <pq||rs> (real orbitals), off for t; response operators
+  declare symmetric, antisymmetric or none. The oracle tests each tensor with random
+  values having exactly its declared symmetry. DeltaEvaluate substitutes into tensor
+  indices, DanglingSum counts them, and Simplify's like-term key must canonicalise
+  tensors including the sign.
+- Operator definitions: a named operator = a sum of tensor x operator-string terms, so
+  new objects (CC and response theory: perturbations, Lambda_n, ...) are a few lines.
+- Builders: `hamiltonian()`, `cluster(n)`, and `FluctuationPotential()` (named
+  explicitly, like `hamiltonian()`; the legacy code called it Phi). Check the rebuilt
+  FluctuationPotential against its definition with the oracle (legacy form: normal-
+  ordered V plus the constant -1/2 sum_ij <ij||ij>); the legacy version was never tested.
+  Then delete `core/cluster.py` and `core/tools.py`.
+- Out of scope: projections / Fermi-vacuum expectation values (needed for CC equations
+  and response functions). That needs its own no-Wick design, in a later step.
+- End goal (later step): generate Python code from derived expressions, as
+  `np.einsum` / `opt_einsum.contract` calls, for the prototype codes (`alqemi/codegen/`).
 
 ## Deferred: space dimensions (not planned; revisit only if needed)
 Σ_k δ_kk = number of orbitals in k's space, which ALQEMI has no symbol for, so

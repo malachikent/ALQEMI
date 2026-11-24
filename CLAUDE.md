@@ -1,5 +1,6 @@
 ## Core design (v3)
-- No Wick's theorem. Never use sympy.physics.secondquant.Commutator or wicks; SymPy only for final printing.
+- No Wick's theorem. No SymPy anywhere in v3 (not even for printing); LaTeX/text output is
+  printed directly from ALQEMI's own objects.
 - Own immutable core (frozen dataclasses); exact Fraction coefficients.
 - Orbital space lives on Index(name, space) with Space.GENERAL|OCC|VIRT; never parsed from names.
 - Dummies are Term.summed (frozenset[Index]); products freshen dummies via an explicit IndexPool. No globals.

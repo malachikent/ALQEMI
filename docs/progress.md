@@ -34,17 +34,16 @@
 - Step 6 implemented: `pipeline/simplify.py` (`simplify`, `relabel_dummies`) and `pipeline/run.py` (`run`). The four-stage pipeline is complete. `run` reproduces HJO's (1.8.11)-(1.8.16) and (1S.2.4); [E_PQ, Σ_k E_kk], [E_PQ, E_PQ] and the Jacobi identity give exactly 0; sums like [Σ_k E_kP, Σ_k E_kQ] come out as Σ_p a†_p a_Q - Σ_p a†_p a_P.
 
 ## In progress
-- Nothing is half-done. No Step 7 has been planned yet.
+- Step 7 (public API, legacy cleanup, packaging) spec and tests written:
+  `alqemi/tests/test_step7_package.py` (53 checks, spec in its docstring). Not implemented yet.
+- CLAUDE.md and DESIGN_DECISIONS.md: no SymPy anywhere in v3 (decision 13).
+- Step 8 planned (DESIGN_DECISIONS.md, "Step 8"): `Tensor`, operator definitions,
+  `hamiltonian()`, `cluster(n)`, `FluctuationPotential()`.
 
 ## Tests
-- `pytest alqemi`: 602 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 55 in step 6, 11 legacy), 0 failing. About 20 s.
-
-## Open questions
-- What comes next. Candidates:
-  - Final printing: LaTeX/SymPy output (CLAUDE.md allows SymPy only for this).
-  - Public API: `alqemi/__init__.py` still imports the legacy SymPy-based `alqemi.py`; decide what v3 exports and what happens to `alqemi/algebra/`, `core/tools.py`, `core/cluster.py` and the legacy tests.
-  - Amplitudes/integrals (e.g. t_ia, f_pq) as scalar tensors, for coupled-cluster-style expressions like [H, T].
-  - The two deferred items in DESIGN_DECISIONS.md, only if needed.
+- `pytest alqemi`: 602 pass + the new Step 7 file, which fails until Step 7 is implemented
+  (8 of its 53 checks already pass).
 
 ## Next step
-Decide Step 7 (see open questions), then write its spec and tests before any code.
+Implement Step 7. Then Step 8 spec and tests. Later: Fermi-vacuum projections and
+einsum code generation, direct LaTeX printing (decision 13).
