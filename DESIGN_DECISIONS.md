@@ -362,19 +362,46 @@ dummies are renamed around free names). If needed: a `blocks(x)` helper returnin
 block (results are block-structured, as EPT writes them and codegen needs). Also
 possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free names.
 
-## Candidates: unitary CC and high-order BCH (not scheduled)
-- `adjoint(x)`: reverse and adjoint every operator string, keep real tensors as they
-  are, so T2^dagger = 1/4 sum t^{ab}_{ij} a+_i a+_j a_b a_a uses the SAME tensor as T2.
-  (`tensor_operator` cannot express this: it pairs upper tensor indices with
-  creators, so it would make a different tensor t^{ij}_{ab}.) Then the UCC generator
-  sigma = T - T^dagger works with the existing `bch`. Its series never terminates
-  (sigma contains de-excitations, which contract with each other), so orders 5, 6, ...
-  are real truncation choices; `bch` already accepts any order.
-- Performance of high-order BCH: [[H, T2], T2] takes 3.6 s; order 3-4 with T2 (and
-  UCC orders 5-6) has not been timed. Simplify's dummy-renaming search is factorial
-  in the number of dummies per space and is the likely bottleneck. Also possible:
-  projection-aware truncation (only build BCH terms that survive projection onto
-  rank n).
+## Step 10 (spec 2026-11-24): two exact speed-ups
+- Spec + tests: `alqemi/tests/test_step10_performance.py` (36 checks, spec in its
+  docstring). Referee: `alqemi/tests/reference_simplify.py`, the brute-force Simplify
+  of Steps 6/8 kept verbatim; the fast Simplify must give EXACTLY its output.
+  Validated against a prototype: 929 tests pass; 8 of 9 planted bugs caught (the miss,
+  pruning only by occupied count, changes speed slightly, never results).
+- Profiling (2026-11-24): 96% of [[H, T2], T2] was Simplify's like-term search
+  (41,472 renamings for 32 terms); projections spent their time building Terms for
+  split copies that are zero.
+- 1. Simplify: only exchange dummies with equal name-free fingerprints (space; and
+  where it occurs: operator kind + run index, delta partner (free name or "dummy"),
+  tensor name/swap/ranks/side, side "either" under a swap). Any renaming that maps a
+  term onto a like term keeps fingerprints, so the output is unchanged.
+  [[H, T2], T2]: 3.6 s -> 0.13 s.
+- 2. vacuum_expectation: after splitting, drop terms whose operators change the
+  occupied or the virtual electron count; they map |HF> to an orthogonal state, so
+  they are exactly 0 (particle-number conservation, not Wick).
+  CCD residual projection: 3.5 s -> 0.44 s; CCSD energy derivation: ~9 s -> 0.3 s.
+- Time budgets in the tests are about 10x the measured times.
+
+## Candidates (not scheduled)
+- `adjoint(x)` for unitary CC: reverse and adjoint every operator string, keep real
+  tensors as they are, so T2^dagger = 1/4 sum t^{ab}_{ij} a+_i a+_j a_b a_a uses the
+  SAME tensor as T2. (`tensor_operator` cannot express this: it pairs upper tensor
+  indices with creators, so it would make a different tensor t^{ij}_{ab}.) Then the
+  UCC generator sigma = T - T^dagger works with the existing `bch`; its series never
+  terminates, so orders 5, 6, ... are real truncation choices (`bch` accepts any order).
+- Iterative fingerprint refinement (Weisfeiler-Lehman), measured 2026-11-24 in a
+  prototype: each round extends a dummy's fingerprint with its tensor neighbours' and
+  delta partners'. For the 4th commutator with T2 it cut the renamings from 8.8 million
+  to 41,000 (worst term 2 million -> 9,216) and Simplify from >120 s to 5.4 s. Needed
+  only for order 3-4 BCH with T2 (not on the roadmap); identical output not yet
+  checked on order-3 terms.
+- Projection-aware truncation: excitation level is additive and every T raises it,
+  so a BCH term whose LOWEST possible level (general indices counted as de-exciting)
+  already exceeds the projection rank n can be dropped while building the series.
+  Exact. bch(H, T2, order=4) builds C3 and C4, which no CCD/CCSD/CCSDT projection with
+  T2 uses; CCSD doubles needs order 4 only for T1 terms.
+- Timings without these: bch(H, T2, order=3) 3.9 s (45 terms); bch(H, T2, order=4)
+  and bch(H, T1+T2, order=4) did not finish in 10 min.
 
 ## OPEN
 - None.

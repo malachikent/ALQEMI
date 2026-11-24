@@ -59,14 +59,14 @@
 - Step 9 spec and tests: `alqemi/tests/test_step9_projection.py` (73 checks). Free general indices in projections recorded as deferred (EPT/CPT).
 - Step 9 implemented: `excitation`, `deexcitation` (`builders.py`); `vacuum_expectation`, `projection` (`pipeline/project.py`); `bch` (`pipeline/bch.py`); public API, `docs/api.rst`, CHANGELOG. Derives the CCSD energy (5 terms) and the CCD doubles residual (18 terms).
 
+- BCH performance investigated (DESIGN_DECISIONS.md, "Step 10" and "Candidates"). Kept as Step 10: fingerprint-restricted Simplify search and occupation-count pruning in projections; recorded the rest.
+
 ## In progress
-- Nothing is half-done.
+- Step 10 (two exact speed-ups) spec and tests written: `alqemi/tests/test_step10_performance.py` (36 checks) and `alqemi/tests/reference_simplify.py` (brute-force referee). Not implemented yet: its 3 time budgets fail, everything else passes.
 
 ## Tests
-- `pytest alqemi`: 893 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 65 in step 7, 163 in step 8, 73 in step 9), 0 failing. About 38 s.
+- `pytest alqemi`: 926 pass, 3 fail (the Step 10 time budgets).
 
 ## Next step
-Choose Step 10. Candidates: einsum code generation (now has real equations to work
-on), direct LaTeX printing (decision 13), `adjoint()` for unitary CC, high-order BCH
-performance (DESIGN_DECISIONS.md, "Candidates"). Also: fix the pytest deprecation warning
-about a class-scoped fixture.
+Implement Step 10. Then choose: einsum code generation, direct LaTeX printing
+(decision 13), or a recorded candidate (DESIGN_DECISIONS.md, "Candidates").
