@@ -10,8 +10,11 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
-To be released as 0.1.0. First release of ALQEMI v3, a rewrite of the earlier
-SymPy-based prototype.
+## [0.1.0] - 2026-11-24
+
+First release of ALQEMI v3, a rewrite of the earlier SymPy-based prototype:
+commutator algebra by HJO's identities (no Wick's theorem), with tensors and the
+standard coupled-cluster operators.
 
 ### Added
 - Symbol layer: `Space`, `Index`, `Kind`, `Op`, `OpString`, `cre`, `ann`.
