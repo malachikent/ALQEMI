@@ -31,15 +31,20 @@
 
 - Step 6 (Simplify + `run`) spec and tests written: `alqemi/tests/test_step6_simplify.py` (55 checks, spec in its docstring). Summary in DESIGN_DECISIONS.md, "Step 6".
 
+- Step 6 implemented: `pipeline/simplify.py` (`simplify`, `relabel_dummies`) and `pipeline/run.py` (`run`). The four-stage pipeline is complete. `run` reproduces HJO's (1.8.11)-(1.8.16) and (1S.2.4); [E_PQ, Σ_k E_kk], [E_PQ, E_PQ] and the Jacobi identity give exactly 0; sums like [Σ_k E_kP, Σ_k E_kQ] come out as Σ_p a†_p a_Q - Σ_p a†_p a_P.
+
 ## In progress
-- Step 6 code (`alqemi/pipeline/simplify.py`, `alqemi/pipeline/run.py`) is not written yet.
+- Nothing is half-done. No Step 7 has been planned yet.
 
 ## Tests
-- `pytest alqemi` currently stops at collection: `test_step6_simplify.py` cannot import `alqemi.pipeline.run`. This is expected until Step 6 code exists.
-- Against a throwaway reference implementation: 602 pass (547 earlier, 55 in step 6).
+- `pytest alqemi`: 602 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 55 in step 6, 11 legacy), 0 failing. About 20 s.
 
 ## Open questions
-- None.
+- What comes next. Candidates:
+  - Final printing: LaTeX/SymPy output (CLAUDE.md allows SymPy only for this).
+  - Public API: `alqemi/__init__.py` still imports the legacy SymPy-based `alqemi.py`; decide what v3 exports and what happens to `alqemi/algebra/`, `core/tools.py`, `core/cluster.py` and the legacy tests.
+  - Amplitudes/integrals (e.g. t_ia, f_pq) as scalar tensors, for coupled-cluster-style expressions like [H, T].
+  - The two deferred items in DESIGN_DECISIONS.md, only if needed.
 
 ## Next step
-Implement Step 6 (`pipeline/simplify.py`, `pipeline/run.py`) to make `test_step6_simplify.py` pass.
+Decide Step 7 (see open questions), then write its spec and tests before any code.

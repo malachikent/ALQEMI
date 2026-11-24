@@ -180,7 +180,7 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - Spec + tests: `alqemi/tests/test_step5_delta_evaluate.py` (66 checks). Validated
   against a throwaway reference implementation; all 18 planted bugs caught.
 
-## Step 6 (spec + tests written 2026-11-23): pipeline stage 4, Simplify, and `run`
+## Step 6 (done 2026-11-23): pipeline stage 4, Simplify, and `run`
 - `alqemi/pipeline/simplify.py`: `simplify(x)`, `relabel_dummies(x)`.
   `alqemi/pipeline/run.py`: `run(x, trace=None)` runs all four stages with its own pool.
 - Choices made in the spec:
