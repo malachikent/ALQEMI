@@ -286,6 +286,47 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - End goal (later step): generate Python code from derived expressions, as
   `np.einsum` / `opt_einsum.contract` calls, for the prototype codes (`alqemi/codegen/`).
 
+## Step 9 (spec 2026-11-24): Fermi-vacuum projections
+- Spec + tests: `alqemi/tests/test_step9_projection.py` (73 checks, spec in its docstring).
+  Validated against a throwaway reference implementation: 893 tests pass, all 19
+  planted bugs caught. The reference reproduces the CCSD energy (5 terms) and the
+  standard 18-term CCD doubles residual.
+- Goal: CC energy and amplitude equations, and later response-function terms, as
+  vacuum expectation values. Excited determinants are never separate objects:
+  |mu> = tau_mu |HF> and <mu| = <HF| tau_mu^dagger (HJO's CC notation), so every
+  projection is a vacuum expectation value.
+- Names (ASCII in code; Greek only in docs and printed output):
+  - `excitation(n)`: tau_mu for rank n, the bare excitation string with FREE indices
+    and coefficient 1, e.g. a+_a a+_b a_j a_i for n = 2.
+  - `vacuum_expectation(X)`: <HF| X |HF>.
+  - `projection(n, X)`: <mu_n| X |HF> = vacuum_expectation(tau_mu^dagger X); n = 0 gives
+    <HF| X |HF> (the energy).
+  - `deexcitation(n, name="l")`: Lambda_n = (1/n!)^2 sum l^{i..}_{a..} a+_i.. a_a..,
+    summed with amplitudes, like `cluster(n)`. Not a projector.
+- Notation: excited determinants are written |mu_n> or |^{ab}_{ij}> in docs and
+  printed output, never Phi_ij^ab; Phi means only the fluctuation potential.
+- Method (settled 2026-11-24): absorb a killer into a bracket. Because K|HF> = 0
+  for a ket-side killer K (a_a virtual, a+_i occupied),
+      <HF| X K Y |HF> = <HF| X [K, Y]_(+) |HF>,
+  with Y the whole rest of the string: an anticommutator when Y has odd length, a
+  commutator when Y has even length (always rank-reducing, decision 6). The bracket
+  is then evaluated by the existing pipeline (IdentityExpand, DeltaEvaluate,
+  Simplify). Repeat until only scalars remain. No Wick's theorem and no reordering
+  as a step of its own.
+  Spec details: once every index is OCC or VIRT, each operator kills exactly one
+  side (a_a, a+_i kill |HF>; a+_a, a_i kill <HF|), so no bra-side rule is needed:
+  take the RIGHTMOST |HF>-killer; if there is none, or it is the last operator, the
+  term is 0. Inside the loop only IdentityExpand and DeltaEvaluate run; Simplify
+  runs once at the end (per-step Simplify made the CCD residual 6.5x slower).
+- `bch(H, T, order=4)` is part of Step 9: H + [H,T] + 1/2 [[H,T],T] + ..., each
+  nested commutator evaluated and simplified before projection.
+- General indices (settled 2026-11-24): split. Each summed GENERAL index becomes an
+  OCC copy and a VIRT copy of its term before projection; results name their blocks
+  (f_ov, v_oovv, ...), as code generation needs. A free GENERAL index is a ValueError.
+- Modules: `excitation`, `deexcitation` in `builders.py`; `vacuum_expectation`,
+  `projection` in `pipeline/project.py`; `bch` in `pipeline/bch.py`. The Step 7
+  public-API list grows by these five names.
+
 ## Deferred: space dimensions (not planned; revisit only if needed)
 Σ_k δ_kk = number of orbitals in k's space, which ALQEMI has no symbol for, so
 DeltaEvaluate raises `DanglingSum`. It arises from inputs like Σ_k [a_k, a†_k a_P]. If
@@ -307,6 +348,16 @@ cluster) are always even/even and reduce fully. If we ever need them, add a fall
 fails and marked as non-reducing in the trace. Also decide a tie-break between partial
 routes (e.g. 1.8.8a vs 1.8.8b). It would be a new rule beyond the current library, so
 CLAUDE.md would need updating too.
+
+## Deferred: free general indices in projections (not planned; revisit for EPT/CPT)
+Propagator methods (electron-propagator theory, cluster perturbation theory) project
+expressions with FREE general indices labelling the ionized/attached orbital, e.g.
+<HF| a_p [H, a+_q] |HF>. `vacuum_expectation` raises ValueError for these, because
+the value depends on the index's space. Names are not the problem (decision 3;
+dummies are renamed around free names). If needed: a `blocks(x)` helper returning
+{space choice of the free general indices: specialized copy of x}, then project each
+block (results are block-structured, as EPT writes them and codegen needs). Also
+possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free names.
 
 ## OPEN
 - None.

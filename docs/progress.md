@@ -53,12 +53,15 @@
   - Public API and `docs/api.rst` extended; deleted `core/cluster.py` and `core/tools.py`; removed the temporary guard in `tests/evaluate.py`.
   - [H, T2] gives 8 terms in 0.02 s; [[H, T2], T2] gives 14 terms in 3.6 s.
 
+## Done (2026-11-24, after 0.1.0)
+- Released 0.1.0 (Steps 1-8): `main` fast-forwarded, tag `v0.1.0`, GitHub release. macOS/3.13 checked locally because GitHub's runner never started.
+
 ## In progress
-- Nothing is half-done.
+- Step 9 (Fermi-vacuum projections) spec and tests written: `alqemi/tests/test_step9_projection.py` (73 checks, spec in its docstring). Not implemented yet.
 
 ## Tests
-- `pytest alqemi`: 815 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 60 in step 7, 163 in step 8), 0 failing. About 22 s.
+- `pytest alqemi`: the Step 9 file fails to collect until Step 9 is implemented; with `--continue-on-collection-errors`, 812 pass and 8 fail (Step 7 checks for the five new public names).
 
 ## Next step
-Choose Step 9. Candidates: Fermi-vacuum projections (CC equations, response
-functions), einsum code generation, direct LaTeX printing (decision 13).
+Implement Step 9. Later: einsum code generation, direct LaTeX printing (decision 13);
+fix the pytest deprecation warning about a class-scoped fixture.
