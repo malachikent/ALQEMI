@@ -10,6 +10,8 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-24
+
 ### Added
 - `excitation(n)` (tau_mu with free indices) and `deexcitation(n)` (Lambda_n).
 - `vacuum_expectation(x)` = <HF| x |HF> and `projection(n, x)` = <mu_n| x |HF>,
