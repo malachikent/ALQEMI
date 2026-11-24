@@ -180,6 +180,26 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - Spec + tests: `alqemi/tests/test_step5_delta_evaluate.py` (66 checks). Validated
   against a throwaway reference implementation; all 18 planted bugs caught.
 
+## Step 6 (spec + tests written 2026-11-23): pipeline stage 4, Simplify, and `run`
+- `alqemi/pipeline/simplify.py`: `simplify(x)`, `relabel_dummies(x)`.
+  `alqemi/pipeline/run.py`: `run(x, trace=None)` runs all four stages with its own pool.
+- Choices made in the spec:
+  - Like terms: equal after renaming dummies (keeping spaces) and reading deltas as
+    symmetric. Operator order is never normalised (decision 8), so a†_P a_Q and
+    a_Q a†_P stay separate terms.
+  - A merged term keeps the first occurrence's position, dummy names and delta
+    orientation. Terms whose coefficients sum to 0 are removed.
+  - Dummies are relabelled per term, in order of first appearance (operators left to
+    right, then deltas), to the first free letters of their space: occ i-o, virt a-h,
+    general p-w, then i1/a1/p1... Names used by any free index in the expression are
+    skipped, whatever its space (decision 12).
+  - Matching dummies tries every renaming within each space, which costs n! per
+    space. That is fine for the handful of dummies in a term; revisit if it isn't.
+- Results: [E_PQ, Σ_p E_pp], [E_PQ, E_PQ] and the Jacobi identity (1.8.17) all
+  simplify to exactly 0.
+- Spec + tests: `alqemi/tests/test_step6_simplify.py` (55 checks). Validated against a
+  throwaway reference implementation; all 15 planted bugs caught.
+
 ## Deferred: space dimensions (not planned; revisit only if needed)
 Σ_k δ_kk = number of orbitals in k's space, which ALQEMI has no symbol for, so
 DeltaEvaluate raises `DanglingSum`. It arises from inputs like Σ_k [a_k, a†_k a_P]. If
