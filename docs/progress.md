@@ -72,6 +72,10 @@
   `docs/api.rst`, `opt_einsum` in the test extra, CHANGELOG. The generated CCSD energy and
   CCD doubles residual match the textbook spin-orbital formulas.
 
+- CI fix before 0.2.0: the Step 10 CCD-residual budget is relative (pruned vs
+  unpruned on the same machine, at least 3x), since the fixed 2 s failed on slow
+  runners; `opt_einsum` added to the CI conda environment (`devtools/conda-envs/test_env.yaml`).
+
 ## In progress
 - Nothing is half-done.
 

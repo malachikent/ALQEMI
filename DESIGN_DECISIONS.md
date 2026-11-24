@@ -387,6 +387,11 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
 - Time budgets in the tests are several times the measured times (the CCD-residual
   budget was tightened from 4 s to 2 s at implementation: unpruned it takes 3.5 s on
   an idle machine, so 4 s could not detect a missing pruning).
+- CCD-residual budget made relative (2026-11-24, before 0.2.0): the fixed 2 s failed
+  on slow CI runners (macOS 3.11: 2.4 s; Windows 3.11: 3.0 s) with correct results.
+  The test now times the projection with and without the pruning on the same
+  machine and requires at least 3x (about 8x locally); it also checks both give
+  the same result. Verified to fail when the pruning is removed.
 
 ## Step 11 (done 2026-11-24): einsum code generation
 - Spec + tests: `alqemi/tests/test_step11_codegen.py` (76 checks, spec in its

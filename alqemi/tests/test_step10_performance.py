@@ -26,8 +26,11 @@ Simplify must give EXACTLY the output of the brute-force search it replaces
   the pre-Step-10 code exceeds each of them):
     - simplify of the raw [[H, T2], T2] (32 terms): under 0.5 s (was 1.7 s);
     - CCSD energy, projection(0, bch(H, T1 + T2, order=2)): under 3 s (was ~9 s);
-    - CCD doubles residual, projection(2, .) of a prebuilt bch(H, T2, order=2):
-      under 2 s (0.43 s with the pruning, 3.5 s without it on an idle machine).
+    - CCD doubles residual, projection(2, .) of a prebuilt bch(H, T2, order=2): a
+      RELATIVE check, at least 3x faster than the same projection with the pruning
+      switched off, timed on the same machine (0.43 s vs 3.5 s locally, about 8x).
+      A fixed limit failed on slow CI runners (2.4-3.0 s against 2 s) while still
+      being unable to catch a missing pruning on a fast machine.
 """
 import time
 
@@ -42,6 +45,7 @@ from alqemi.core.tensor import Swap, Tensor
 from alqemi.pipeline.bch import bch
 from alqemi.pipeline.delta_evaluate import delta_evaluate
 from alqemi.pipeline.identity_expand import identity_expand
+from alqemi.pipeline import project as project_module
 from alqemi.pipeline.project import projection, vacuum_expectation
 from alqemi.pipeline.run import run
 from alqemi.pipeline.simplify import simplify
@@ -192,7 +196,16 @@ def test_budget_ccsd_energy():
     assert elapsed < 3.0
 
 
-def test_budget_ccd_residual_projection():
+def test_budget_ccd_residual_projection(monkeypatch):
     hbar = bch(hamiltonian(), cluster(2), order=2)
-    elapsed = _best_of(lambda: projection(2, hbar), repeats=1)
-    assert elapsed < 2.0
+
+    def timed():
+        t = time.perf_counter()
+        result = projection(2, hbar)
+        return result, time.perf_counter() - t
+
+    pruned, pruned_time = timed()
+    monkeypatch.setattr(project_module, "_conserves_occupations", lambda term: True)
+    unpruned, unpruned_time = timed()
+    assert pruned == unpruned  # the pruning is exact
+    assert unpruned_time >= 3 * pruned_time
