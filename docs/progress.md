@@ -46,13 +46,18 @@
   - A wheel built from the repo installs and runs in a clean virtualenv.
 
 ## In progress
-- Nothing is half-done.
-- Step 8 planned (DESIGN_DECISIONS.md, "Step 8"): `Tensor`, operator definitions,
-  `hamiltonian()`, `cluster(n)`, `FluctuationPotential()`.
+- Step 8 (tensors and CC operators) spec and tests written:
+  `alqemi/tests/test_step8_tensors.py` (163 checks, spec in its docstring), plus
+  `TensorValues` in `tests/evaluate.py`. Not implemented yet.
+  `tests/evaluate.py` imports `alqemi.core.tensor` behind a temporary guard so the
+  Step 1-7 tests still run; remove the guard when implementing.
+- Decision 14: Simplify matches like terms up to swaps of adjacent same-kind operators.
 
 ## Tests
-- `pytest alqemi`: 644 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 55 in step 6, 53 in step 7), 0 failing. About 20 s.
+- `pytest alqemi`: the Step 8 file fails to collect until Step 8 is implemented;
+  with `--continue-on-collection-errors`, 641 pass and 11 fail (10 Step 7 checks for
+  the new public names, and Step 6's new same-kind-swap zero test).
 
 ## Next step
-Step 8 spec and tests. Later: Fermi-vacuum projections, einsum code generation,
-direct LaTeX printing (decision 13).
+Implement Step 8. Later: Fermi-vacuum projections, einsum code generation, direct
+LaTeX printing (decision 13).

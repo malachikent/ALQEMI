@@ -16,6 +16,8 @@
 - Rule selection: HJO principle of rank reduction. Anticommute two odd-length strings;
   commute all other pairs. A rule fires only if all brackets it creates are rank-reducing.
 - Never reorder results toward normal order.
+- Simplify's like-term matching may swap adjacent same-kind operators (sign only, exact);
+  it never swaps a creator with an annihilator and never changes the output's operator order.
 - Elementary anticommutators [a_p, a†_q]_+ are unevaluated ElementaryBracket scalars through
   stages 1-2: no delta, delta_pp = 1, delta_ia = 0, or summation collapse before DeltaEvaluate.
 - Default route: split the RIGHT string first; split the left only when the right can't be

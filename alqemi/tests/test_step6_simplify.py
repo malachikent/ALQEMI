@@ -113,10 +113,17 @@ class TestMerge:
         assert out == X(T(E(p, P), coeff=2, summed=[p]))
 
     def test_two_dummies_merge_up_to_permutation(self):
-        # sum_kl a†_k a†_l a_P  and  sum_kl a†_l a†_k a_P  are the same term
-        x = X(T(cre(k), cre(l), ann(P), summed=[k, l]), T(cre(l), cre(k), ann(P), summed=[k, l]))
+        # sum_kl a†_k a_P a†_l  and  sum_kl a†_l a_P a†_k  are the same term
+        x = X(T(cre(k), ann(P), cre(l), summed=[k, l]), T(cre(l), ann(P), cre(k), summed=[k, l]))
         out = simplify(x)
         assert len(out) == 1 and out.terms[0].coeff == 2
+
+    def test_symmetric_sum_of_same_kind_pair_is_zero(self):
+        # Changed by Step 8 (DESIGN_DECISIONS 14). sum_kl a†_k a†_l is symmetric in the
+        # labels but antisymmetric in the operators, so it is 0. Simplify used to merge
+        # these two terms into 2 sum_kl a†_k a†_l a_P; it now drops them.
+        x = X(T(cre(k), cre(l), ann(P), summed=[k, l]), T(cre(l), cre(k), ann(P), summed=[k, l]))
+        assert len(simplify(x)) == 0
 
     def test_dummy_only_in_delta_merges(self):
         x = X(T(cre(Q), scalars=[Delta(i, P)], summed=[i]), T(cre(Q), scalars=[Delta(P, j)], summed=[j]))

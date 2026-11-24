@@ -73,6 +73,15 @@ Source: Helgaker, Jørgensen & Olsen (HJO), Ch. 1 (Helgaker_excerpt.pdf in this 
     text and LaTeX directly from its own objects. An optional `to_sympy()` converter for
     downstream algebra may be added later; it would never be part of the pipeline.
 
+14. **Simplify may swap adjacent same-kind operators when matching like terms.**
+    {a†_p, a†_q} = {a_p, a_q} = 0 makes such a swap exact, a sign only, never a delta,
+    so it is not a move toward normal order. Like-term matching tries every order
+    within each run of adjacent creators and each run of adjacent annihilators (with
+    the permutation's sign); a repeated operator in a run makes the term zero. A
+    creator and an annihilator are never swapped, and the merged term keeps its first
+    occurrence's operator order. Reason: without it, [F, T2] has 4 terms that are 2
+    equal pairs (f^{p}_{b} t^{ba}_{ji} a†_p a†_a a_i a_j = f^{p}_{b} t^{ab}_{ji} a†_a a†_p a_i a_j).
+
 ## Golden results (all verified by the oracle)
 (1.8.11), (1.8.12), (1.8.14), (1.8.15), (1.8.16), (1S.2.4). Property for later steps
 (HJO Exercise 1.2): [even string n, even string m] expands into strings of at most
@@ -232,22 +241,42 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - Checked: a wheel built from the repo contains only `alqemi.*`, declares no run-time
   dependencies, and works from a clean virtualenv outside the repo.
 
-## Step 8 (planned): tensors and coupled-cluster operators
-- `Tensor`: a commuting scalar with a name, upper and lower indices and a declared
-  symmetry. Antisymmetry within the upper and within the lower indices is always on
-  (a repeated index there gives 0). Whether bra and ket may be swapped is per tensor:
-  on by default for f and <pq||rs> (real orbitals), off for t; response operators
-  declare symmetric, antisymmetric or none. The oracle tests each tensor with random
-  values having exactly its declared symmetry. DeltaEvaluate substitutes into tensor
-  indices, DanglingSum counts them, and Simplify's like-term key must canonicalise
-  tensors including the sign.
-- Operator definitions: a named operator = a sum of tensor x operator-string terms, so
-  new objects (CC and response theory: perturbations, Lambda_n, ...) are a few lines.
-- Builders: `hamiltonian()`, `cluster(n)`, and `FluctuationPotential()` (named
-  explicitly, like `hamiltonian()`; the legacy code called it Phi). Check the rebuilt
-  FluctuationPotential against its definition with the oracle (legacy form: normal-
-  ordered V plus the constant -1/2 sum_ij <ij||ij>); the legacy version was never tested.
-  Then delete `core/cluster.py` and `core/tools.py`.
+## Step 8 (spec 2026-11-24): tensors and coupled-cluster operators
+- Spec + tests: `alqemi/tests/test_step8_tensors.py` (163 checks, spec in its docstring).
+  Validated against a throwaway reference implementation: 815 tests pass, and 34 of 35
+  planted bugs are caught (the miss is equivalent: `cluster(0)` still raises).
+  `tests/evaluate.py` gained `TensorValues`: random arrays per (name, ranks, swap)
+  with exactly the declared symmetry, and a `tensors=` argument.
+- `Tensor(name, upper, lower, swap)` in `core/tensor.py`: a commuting scalar, always
+  antisymmetric within the upper and within the lower indices. `Swap` (NONE |
+  SYMMETRIC | ANTISYMMETRIC) is the per-tensor upper<->lower exchange symmetry:
+  SYMMETRIC for f, <pq||rs> (stored as tensor "v") and h (real orbitals); NONE for
+  amplitudes; ANTISYMMETRIC for imaginary Hermitian operators. Construction never
+  reorders or zeroes anything.
+- Pipeline: Linearize and IdentityExpand treat tensors as scalars. DeltaEvaluate
+  substitutes into them and counts their indices as occurrences. Simplify merges
+  terms equal up to tensor symmetries (with the sign), drops terms equal to minus
+  themselves, and relabels tensor-only dummies (after operators and deltas). It also
+  matches terms up to same-kind operator swaps (decision 14), so [F, T2] has 2 terms.
+- `alqemi/builders.py`: `tensor_operator` (the general builder; default coefficient
+  1/prod(count of each space in each group)!), `fock_operator`, `fluctuation_potential`
+  (renamed from Phi, lowercase like the others), `hamiltonian(form="fock"|"core")`,
+  `cluster(n)`. All return Expr with numbered pool dummies.
+  - Plain forms by default; `normal_ordered=True` gives the legacy block form
+    (Fermi-vacuum normal-ordered blocks plus constants), the same operator.
+  - A single `tensor_operator(..., normal_ordered=True)` is the normal-ordered
+    product {X}, which is NOT the plain product when it holds an occupied a+ and an
+    occupied a ({a+_i a_j} = a+_i a_j - delta_ij). Only the builders' complete forms
+    are equal, because they add the constants (F = F_N + sum_i f_ii,
+    Phi = V_N - 1/2 sum_ij <ij||ij>). Writing a definition in normal order is not
+    reordering a result (decision 8 still holds for the pipeline).
+  - hamiltonian(form="fock") = F + Phi; form="core" = h + V. Equal when
+    f_pq = h_pq + sum_i <pi||qi>; no HF assumption (f need not be diagonal).
+- Then delete `core/cluster.py` and `core/tools.py`; no sympy anywhere.
+- The Step 7 public-API list grows by Tensor, Swap and the five builders.
+- Step 6's `test_two_dummies_merge_up_to_permutation` expected sum_kl a†_k a†_l a_P +
+  sum_kl a†_l a†_k a_P to merge into one term; both are 0 (decision 14), so it now uses
+  sum_kl a†_k a_P a†_l, and a new test expects the zero.
 - Out of scope: projections / Fermi-vacuum expectation values (needed for CC equations
   and response functions). That needs its own no-Wick design, in a later step.
 - End goal (later step): generate Python code from derived expressions, as
