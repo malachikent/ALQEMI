@@ -64,13 +64,19 @@
 - Step 10 spec and tests: `alqemi/tests/test_step10_performance.py` (36 checks), brute-force referee `alqemi/tests/reference_simplify.py`.
 - Step 10 implemented: fingerprint-restricted like-term search in `pipeline/simplify.py`; occupation-count pruning in `pipeline/project.py`. Output identical to the brute-force Simplify; CCD-residual budget tightened from 4 s to 2 s so it detects a missing pruning.
 
+- Step 11 spec and tests: `alqemi/tests/test_step11_codegen.py` (76 checks), einsum code
+  generation with occupied-first (OOVV) axes and moeris-style integral blocks. Step 7's
+  PUBLIC_API gains `einsum_code`. UHF spin integration recorded as a later step.
+
 ## In progress
-- Nothing is half-done.
+- Step 11: spec and tests written; `alqemi/codegen/einsum.py` not implemented yet, so
+  `test_step11_codegen.py` and four Step 7 public-API tests fail until it is.
 
 ## Tests
 - `pytest alqemi`: 929 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 65 in step 7, 163 in step 8, 73 in step 9, 36 in step 10), 0 failing. About 29 s.
 
 ## Next step
-Choose Step 11: einsum code generation, direct LaTeX printing (decision 13), or a
-recorded candidate (DESIGN_DECISIONS.md, "Candidates"). Also: fix the pytest
-deprecation warning about a class-scoped fixture.
+Implement Step 11 (`alqemi/codegen/einsum.py`, public API, docs/api.rst, opt_einsum in
+the test extra, CHANGELOG). Later: UHF spin integration, direct LaTeX printing
+(decision 13), the recorded candidates. Also: fix the pytest deprecation warning
+about a class-scoped fixture.

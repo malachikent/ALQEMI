@@ -388,6 +388,58 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   budget was tightened from 4 s to 2 s at implementation: unpruned it takes 3.5 s on
   an idle machine, so 4 s could not detect a missing pruning).
 
+## Step 11 (spec 2026-11-24): einsum code generation
+- Spec + tests: `alqemi/tests/test_step11_codegen.py` (76 checks, spec in its
+  docstring). Generated code is executed on random tensor values and compared with
+  direct loops over the same expression; the CCSD energy and the CCD doubles
+  residual are also compared with the textbook spin-orbital formulas written by hand.
+  Validated against a prototype: 1006 tests pass; 13 of 13 planted bugs caught.
+- `einsum_code(expr, name, *, integrals=None, amplitudes="{name}{rank}",
+  backend="numpy")` returns the source of one Python function, one einsum line
+  per term, each under a comment with the ALQEMI term. Backends: `np.einsum(...,
+  optimize=True)` or `opt_einsum.contract`.
+- Index orientation (settled 2026-11-24, the user's convention): OCCUPIED FIRST
+  everywhere. The algebra and printed terms keep t^{ab}_{ij}; only array axes
+  change: t2[i,j,a,b], l2[i,j,a,b], t1[i,a], and the residual r[i,j,a,b].
+- Integrals (settled 2026-11-24): block attributes of one integrals object, as
+  the user's prototype codes store them (moeris.g_OOVV, ...). `g` is ALQEMI's `v`,
+  <pq||rs> in physicist's order. Each integral is rewritten exactly to an
+  occupied-first block (antisymmetry within each group, then the swap symmetry),
+  so <pq||rs> uses only OOOO, OOOV, OOVV, OVOV, OVVV, VVVV and f, h only OO, OV,
+  VV. The access pattern is a template (`integrals={"v": "moeris.g_{block}"}`).
+  Rejected: full arrays plus o/v slices (keeps every redundant block, about 4x the
+  memory, and views with gaps can slow einsum).
+- Fock blocks (settled 2026-11-24): the same form as the ERI blocks, attributes
+  f_OO, f_OV, f_VV of the integrals object (moeris.f_VV[a,c] = f^{a}_{c}),
+  occupied first; under UHF later, f_oo, f_ov, f_vv for beta. The derivations
+  never assume Hartree-Fock, so f_OV terms (e.g. f_ia t_ia in the CCSD energy) and
+  off-diagonal f_OO/f_VV are kept; with an HF reference f_OV = 0 and those terms
+  contribute nothing. Possible later: an option that drops f_OV terms at
+  generation time, for speed only.
+- Amplitudes are plain arguments (t1, t2, l2), already in their block.
+- Not supported yet: deltas between free indices (ValueError; response-theory
+  matrix elements such as delta_ij f_ab will need them).
+- `opt_einsum` joins the test extra at implementation; its numeric test is
+  skipped when it is not installed. The module itself imports no numpy.
+
+## Planned: spin integration for UHF (later step, after Step 11)
+ALQEMI derives spin-orbital equations. The user's UHF codes store spin blocks
+(t2_OOVV / t2_OoVv / t2_oovv for aa / ab / bb). Turning one spin-orbital equation
+into its spin-block equations is a separate derivation step, reserved for UHF
+implementations (settled 2026-11-24). Code generation then names spin blocks
+(O/o, V/v) instead of spin-orbital ones.
+Target: the user's `eris` class (non-redundant ERIs for real spin-orbitals, built
+from chemist's (pq|rs) as physicist's blocks):
+- One letter per index position: O/V = alpha occ/virt, o/v = beta occ/virt.
+- Same-spin blocks are antisymmetrized <pq||rs>, e.g. g_OOVV[i,j,a,b] =
+  (ia|jb) - (ib|ja); mixed-spin blocks are plain <pq|rs> (no exchange), e.g.
+  g_OoVv[I,j,A,b] = <Ij|Ab>.
+- 20 blocks: aa and bb each OOOO, OOOV, OOVV, OVOV, OVVV, VVVV; ab: OoOo, OoOv,
+  oOoV, OoVv, OvOv, oVoV, OvVv, oVvV, VvVv. Occupied-first outranks alpha-first
+  (OvOv and oVoV are both kept; never vOvO).
+- In this convention g_OOVV is the alpha-alpha block, not the spin-orbital one, so
+  Step 11's spin-orbital code is for spin-orbital (GHF-style) tests only.
+
 ## Candidates (not scheduled)
 - `adjoint(x)` for unitary CC: reverse and adjoint every operator string, keep real
   tensors as they are, so T2^dagger = 1/4 sum t^{ab}_{ij} a+_i a+_j a_b a_a uses the
