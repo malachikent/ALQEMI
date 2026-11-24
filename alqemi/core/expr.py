@@ -16,6 +16,7 @@ from typing import Dict, FrozenSet, Iterable, Iterator, Mapping, Set, Tuple, Uni
 from alqemi.core.indices import Index
 from alqemi.core.operators import Op, OpString
 from alqemi.core.pool import IndexPool
+from alqemi.core.tensor import Tensor
 
 Coeff = Union[int, Fraction]
 
@@ -100,7 +101,7 @@ class ElementaryBracket:
         return f"[{self.left}, {self.right}]_+"
 
 
-Scalar = Union[Delta, ElementaryBracket]
+Scalar = Union[Delta, ElementaryBracket, Tensor]
 
 
 # =========================================================================
@@ -178,8 +179,8 @@ class Term:
     def _normalise_scalars(scalars) -> Tuple[Scalar, ...]:
         scalars = tuple(scalars)
         for s in scalars:
-            if not isinstance(s, (Delta, ElementaryBracket)):
-                raise TypeError(f"scalars must be Delta or ElementaryBracket, got {s!r}")
+            if not isinstance(s, (Delta, ElementaryBracket, Tensor)):
+                raise TypeError(f"scalars must be Delta, ElementaryBracket or Tensor, got {s!r}")
         # Scalars commute: a canonical order makes permutations compare equal.
         return tuple(sorted(scalars, key=lambda s: s._sort_key()))
 
@@ -351,14 +352,14 @@ class Expr:
 
 
 def as_expr(x) -> Expr:
-    """Wrap Op, OpString, Bracket, Delta, ElementaryBracket or Term as an Expr."""
+    """Wrap Op, OpString, Bracket, Delta, ElementaryBracket, Tensor or Term as an Expr."""
     if isinstance(x, Expr):
         return x
     if isinstance(x, Term):
         return Expr((x,))
     if isinstance(x, (Op, OpString, Bracket)):
         return Expr((Term(factors=(x,)),))
-    if isinstance(x, (Delta, ElementaryBracket)):
+    if isinstance(x, (Delta, ElementaryBracket, Tensor)):
         return Expr((Term(scalars=(x,)),))
     raise TypeError(f"cannot make an Expr from {x!r}")
 

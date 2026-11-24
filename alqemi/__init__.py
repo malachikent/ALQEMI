@@ -19,12 +19,20 @@ from alqemi.core.expr import (
     comm,
 )
 from alqemi.core.pool import IndexPool
+from alqemi.core.tensor import Swap, Tensor
 from alqemi.pipeline.linearize import linearize
 from alqemi.pipeline.identity_expand import TraceStep, identity_expand
 from alqemi.pipeline.delta_evaluate import DanglingSum, delta_evaluate
 from alqemi.pipeline.simplify import relabel_dummies, simplify
 from alqemi.pipeline.run import run
 from alqemi.rules.hjo import UnsupportedBracket
+from alqemi.builders import (
+    cluster,
+    fluctuation_potential,
+    fock_operator,
+    hamiltonian,
+    tensor_operator,
+)
 
 try:  # written by versioningit when the package is built or installed
     from alqemi._version import __version__
@@ -42,4 +50,7 @@ __all__ = [
     "relabel_dummies", "run",
     # errors
     "UnsupportedBracket", "DanglingSum",
+    # tensors and builders
+    "Tensor", "Swap", "tensor_operator", "fock_operator", "fluctuation_potential",
+    "hamiltonian", "cluster",
 ]

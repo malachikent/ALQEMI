@@ -45,19 +45,20 @@
   - `docs/api.rst` lists the public API; README badges point at malachikent/ALQEMI; CI runs on pushes to every branch.
   - A wheel built from the repo installs and runs in a clean virtualenv.
 
+- Step 8 spec and tests: `alqemi/tests/test_step8_tensors.py` (163 checks), `TensorValues` in `tests/evaluate.py`. Decision 14 (Simplify matches like terms up to same-kind operator swaps); Step 6's two-dummy merge test updated for it.
+- Step 8 implemented:
+  - `core/tensor.py` (`Tensor`, `Swap`); `Term` accepts tensors as scalars.
+  - DeltaEvaluate substitutes into tensors; Simplify handles tensor symmetries, same-kind operator swaps and terms equal to minus themselves.
+  - `builders.py`: `tensor_operator`, `fock_operator`, `fluctuation_potential`, `hamiltonian(form=...)`, `cluster(n)`; plain by default, `normal_ordered=True` for the block form.
+  - Public API and `docs/api.rst` extended; deleted `core/cluster.py` and `core/tools.py`; removed the temporary guard in `tests/evaluate.py`.
+  - [H, T2] gives 8 terms in 0.02 s; [[H, T2], T2] gives 14 terms in 3.6 s.
+
 ## In progress
-- Step 8 (tensors and CC operators) spec and tests written:
-  `alqemi/tests/test_step8_tensors.py` (163 checks, spec in its docstring), plus
-  `TensorValues` in `tests/evaluate.py`. Not implemented yet.
-  `tests/evaluate.py` imports `alqemi.core.tensor` behind a temporary guard so the
-  Step 1-7 tests still run; remove the guard when implementing.
-- Decision 14: Simplify matches like terms up to swaps of adjacent same-kind operators.
+- Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: the Step 8 file fails to collect until Step 8 is implemented;
-  with `--continue-on-collection-errors`, 641 pass and 11 fail (10 Step 7 checks for
-  the new public names, and Step 6's new same-kind-swap zero test).
+- `pytest alqemi`: 815 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 60 in step 7, 163 in step 8), 0 failing. About 22 s.
 
 ## Next step
-Implement Step 8. Later: Fermi-vacuum projections, einsum code generation, direct
-LaTeX printing (decision 13).
+Choose Step 9. Candidates: Fermi-vacuum projections (CC equations, response
+functions), einsum code generation, direct LaTeX printing (decision 13).

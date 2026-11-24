@@ -241,7 +241,7 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
 - Checked: a wheel built from the repo contains only `alqemi.*`, declares no run-time
   dependencies, and works from a clean virtualenv outside the repo.
 
-## Step 8 (spec 2026-11-24): tensors and coupled-cluster operators
+## Step 8 (done 2026-11-24): tensors and coupled-cluster operators
 - Spec + tests: `alqemi/tests/test_step8_tensors.py` (163 checks, spec in its docstring).
   Validated against a throwaway reference implementation: 815 tests pass, and 34 of 35
   planted bugs are caught (the miss is equivalent: `cluster(0)` still raises).
@@ -272,7 +272,11 @@ anticommutators are c-numbers) and summations come out of bracket arguments.
     reordering a result (decision 8 still holds for the pipeline).
   - hamiltonian(form="fock") = F + Phi; form="core" = h + V. Equal when
     f_pq = h_pq + sum_i <pi||qi>; no HF assumption (f need not be diagonal).
-- Then delete `core/cluster.py` and `core/tools.py`; no sympy anywhere.
+- Deleted `core/cluster.py` and `core/tools.py`; no sympy anywhere.
+- Implementation: Simplify's canonical forms sort each anticommuting group (operator
+  run or tensor index group) and use the sort's parity as the sign; a repeat means 0.
+  Timings: [H, T2] 0.02 s (8 terms), [H_no, T2] 0.3 s (28 terms), [[H, T2], T2]
+  3.6 s (14 terms).
 - The Step 7 public-API list grows by Tensor, Swap and the five builders.
 - Step 6's `test_two_dummies_merge_up_to_permutation` expected sum_kl a†_k a†_l a_P +
   sum_kl a†_l a†_k a_P to merge into one term; both are 0 (decision 14), so it now uses

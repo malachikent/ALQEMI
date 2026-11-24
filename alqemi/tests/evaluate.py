@@ -36,10 +36,7 @@ from alqemi.core.expr import (
 )
 from alqemi.core.indices import Index
 from alqemi.core.operators import Op, OpString
-try:
-    from alqemi.core.tensor import Swap, Tensor
-except ImportError:  # until Step 8 is implemented; remove this guard then
-    Swap = Tensor = type("NotYetImplemented", (), {})
+from alqemi.core.tensor import Swap, Tensor
 from alqemi.tests.oracle import Assignment, FockSpace, anticommutator, commutator
 
 

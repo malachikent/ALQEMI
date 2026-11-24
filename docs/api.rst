@@ -29,3 +29,10 @@ API Documentation
    alqemi.run
    alqemi.UnsupportedBracket
    alqemi.DanglingSum
+   alqemi.Tensor
+   alqemi.Swap
+   alqemi.tensor_operator
+   alqemi.fock_operator
+   alqemi.fluctuation_potential
+   alqemi.hamiltonian
+   alqemi.cluster

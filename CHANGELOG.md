@@ -22,11 +22,19 @@ SymPy-based prototype.
   (1.2.27)-(1.2.29) and (1.8.4)-(1.8.9), chosen by the principle of rank reduction;
   no Wick's theorem. `run` reproduces HJO (1.8.11)-(1.8.16) and (1S.2.4).
 - Errors: `UnsupportedBracket`, `DanglingSum`.
+- Tensors: `Tensor` and `Swap`. A tensor is a commuting scalar, antisymmetric within
+  its upper and its lower indices, with a per-tensor upper/lower swap symmetry.
+- Builders: `tensor_operator` (any tensor x operator-string object), `fock_operator`,
+  `fluctuation_potential`, `hamiltonian(form="fock" | "core")`, `cluster(n)`. Plain
+  forms by default; `normal_ordered=True` for the Fermi-vacuum block forms.
+- Simplify merges terms equal up to tensor symmetries and up to swaps of adjacent
+  same-kind operators, and drops terms equal to minus themselves.
 - Test oracle: every result is checked against Jordan-Wigner matrices.
 
 ### Changed
 - No run-time dependencies; Python 3.11 or newer.
 
 ### Removed
-- The SymPy-based prototype (`alqemi.algebra`, `alqemi.sample`) and the
+- The SymPy-based prototype (`alqemi.algebra`, `alqemi.sample`, `alqemi.core.cluster`,
+  `alqemi.core.tools`) and the
   cookiecutter placeholders (`alqemi.canvas`, `alqemi/data`).

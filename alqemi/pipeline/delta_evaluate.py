@@ -1,7 +1,8 @@
 """Pipeline stage 3: DeltaEvaluate.
 
 Deltas are born here. Each ElementaryBracket left by IdentityExpand is evaluated by
-HJO (1.2.27)-(1.2.29); then deltas are evaluated and sums over dummies collapsed.
+HJO (1.2.27)-(1.2.29); then deltas are evaluated and sums over dummies collapsed,
+substituting into operators, other deltas and tensors alike.
 Operators are never reordered and like terms are never merged (Simplify, stage 4).
 """
 from __future__ import annotations
@@ -11,6 +12,7 @@ from typing import Dict, FrozenSet, List, Optional, Set
 from alqemi.core.expr import Bracket, Delta, ElementaryBracket, Expr, Term, as_expr
 from alqemi.core.indices import Index
 from alqemi.core.operators import Op, OpString
+from alqemi.core.tensor import Tensor
 
 
 class DanglingSum(Exception):
@@ -41,11 +43,14 @@ def _evaluate_term(term: Term) -> Optional[Term]:
     # 1. Elementary brackets, (1.2.27)-(1.2.29). The delta keeps the bracket's
     #    order, which is how HJO writes its printed results.
     deltas: List[Delta] = []
+    tensors: List[Tensor] = []
     for s in term.scalars:
         if isinstance(s, ElementaryBracket):
             if s.left.kind is s.right.kind:
                 return None
             deltas.append(Delta(s.left.index, s.right.index))
+        elif isinstance(s, Tensor):
+            tensors.append(s)
         else:
             deltas.append(s)
 
@@ -67,6 +72,7 @@ def _evaluate_term(term: Term) -> Optional[Term]:
                 mapping = {victim: keep}
                 deltas = [Delta(mapping.get(x.p, x.p), mapping.get(x.q, x.q)) for x in deltas]
                 factors = [_substitute(f, mapping) for f in factors]
+                tensors = [t._rename(mapping) for t in tensors]
                 summed.discard(victim)
                 break
         else:
@@ -76,11 +82,15 @@ def _evaluate_term(term: Term) -> Optional[Term]:
     deltas = _dedupe(deltas)
 
     # 4. A sum that no longer occurs has no symbolic value.
-    occurring = {ix for d in deltas for ix in (d.p, d.q)} | {op.index for f in factors for op in f}
+    occurring = (
+        {ix for d in deltas for ix in (d.p, d.q)}
+        | {op.index for f in factors for op in f}
+        | {ix for t in tensors for ix in t.indices}
+    )
     for ix in sorted(summed - occurring, key=lambda ix: (ix.name, ix.space.value)):
         raise DanglingSum(term, ix)
 
-    return Term(term.coeff, tuple(deltas), tuple(factors), frozenset(summed))
+    return Term(term.coeff, tuple(deltas) + tuple(tensors), tuple(factors), frozenset(summed))
 
 
 def _collapsible(d: Delta, summed: Set[Index]) -> Optional[Index]:
