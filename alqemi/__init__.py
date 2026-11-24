@@ -27,6 +27,7 @@ from alqemi.pipeline.simplify import relabel_dummies, simplify
 from alqemi.pipeline.run import run
 from alqemi.pipeline.project import projection, vacuum_expectation
 from alqemi.pipeline.bch import bch
+from alqemi.codegen.einsum import einsum_code
 from alqemi.rules.hjo import UnsupportedBracket
 from alqemi.builders import (
     cluster,
@@ -59,4 +60,6 @@ __all__ = [
     "hamiltonian", "cluster",
     # projections
     "excitation", "deexcitation", "vacuum_expectation", "projection", "bch",
+    # code generation
+    "einsum_code",
 ]

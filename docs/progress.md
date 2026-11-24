@@ -68,15 +68,17 @@
   generation with occupied-first (OOVV) axes and moeris-style integral blocks. Step 7's
   PUBLIC_API gains `einsum_code`. UHF spin integration recorded as a later step.
 
+- Step 11 implemented: `alqemi/codegen/einsum.py` (`einsum_code`); public API,
+  `docs/api.rst`, `opt_einsum` in the test extra, CHANGELOG. The generated CCSD energy and
+  CCD doubles residual match the textbook spin-orbital formulas.
+
 ## In progress
-- Step 11: spec and tests written; `alqemi/codegen/einsum.py` not implemented yet, so
-  `test_step11_codegen.py` and four Step 7 public-API tests fail until it is.
+- Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: 929 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 65 in step 7, 163 in step 8, 73 in step 9, 36 in step 10), 0 failing. About 29 s.
+- `pytest alqemi`: 1006 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 66 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11), 0 failing. About 31 s.
 
 ## Next step
-Implement Step 11 (`alqemi/codegen/einsum.py`, public API, docs/api.rst, opt_einsum in
-the test extra, CHANGELOG). Later: UHF spin integration, direct LaTeX printing
-(decision 13), the recorded candidates. Also: fix the pytest deprecation warning
+Choose Step 12: UHF spin integration (DESIGN_DECISIONS.md, "Planned"), direct LaTeX
+printing (decision 13), deltas in code generation, or a recorded candidate. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

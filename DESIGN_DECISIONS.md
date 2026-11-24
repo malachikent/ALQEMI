@@ -388,12 +388,13 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   budget was tightened from 4 s to 2 s at implementation: unpruned it takes 3.5 s on
   an idle machine, so 4 s could not detect a missing pruning).
 
-## Step 11 (spec 2026-11-24): einsum code generation
+## Step 11 (done 2026-11-24): einsum code generation
 - Spec + tests: `alqemi/tests/test_step11_codegen.py` (76 checks, spec in its
   docstring). Generated code is executed on random tensor values and compared with
   direct loops over the same expression; the CCSD energy and the CCD doubles
   residual are also compared with the textbook spin-orbital formulas written by hand.
   Validated against a prototype: 1006 tests pass; 13 of 13 planted bugs caught.
+  The real code (`alqemi/codegen/einsum.py`) gives the same: 1006 pass, 13 of 13.
 - `einsum_code(expr, name, *, integrals=None, amplitudes="{name}{rank}",
   backend="numpy")` returns the source of one Python function, one einsum line
   per term, each under a comment with the ALQEMI term. Backends: `np.einsum(...,
@@ -419,8 +420,8 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
 - Amplitudes are plain arguments (t1, t2, l2), already in their block.
 - Not supported yet: deltas between free indices (ValueError; response-theory
   matrix elements such as delta_ij f_ab will need them).
-- `opt_einsum` joins the test extra at implementation; its numeric test is
-  skipped when it is not installed. The module itself imports no numpy.
+- `opt_einsum` is in the test extra; its numeric test is skipped when it is not
+  installed. The module itself imports no numpy.
 
 ## Planned: spin integration for UHF (later step, after Step 11)
 ALQEMI derives spin-orbital equations. The user's UHF codes store spin blocks

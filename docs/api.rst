@@ -41,3 +41,4 @@ API Documentation
    alqemi.vacuum_expectation
    alqemi.projection
    alqemi.bch
+   alqemi.einsum_code

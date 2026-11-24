@@ -18,6 +18,12 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 - `bch(h, t, order=4)`: the BCH expansion of e^{-T} H e^{T}.
 - Together these derive coupled-cluster equations, e.g. the CCSD energy and the
   18-term CCD doubles residual.
+- `einsum_code(expr, name)`: writes a derived expression as a Python function, one
+  `np.einsum` (or `opt_einsum.contract`) line per term. Occupied-first axes
+  (t2[i,j,a,b], r[i,j,a,b]); integrals as occupied-first blocks of one integrals
+  object (moeris.g_OOVV, moeris.f_OV, ...), rewritten exactly with their sign.
+  Spin-orbital only.
+- Test extra: `opt_einsum`.
 
 ### Changed
 - Faster, with identical results: Simplify only exchanges dummies with equal
