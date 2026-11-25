@@ -10,6 +10,8 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-24
+
 ### Added
 - `group_permutations(expr)`: folds terms related by swapping two free indices into
   `PermutedTerm` groups under (1 - P_ij), (1 - P_ab) and their product;
