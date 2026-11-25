@@ -10,6 +10,8 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-24
+
 ### Added
 - `latex(x)`: LaTeX printing straight from ALQEMI's objects (no SymPy). Double-bar
   integrals `\langle pq \| rs \rangle`, tensors `t^{ab}_{ij}`, explicit sums,
