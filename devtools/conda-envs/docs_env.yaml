@@ -1,0 +1,17 @@
+# Docs CI job and local docs work: Sphinx, plus Psi4 and PySCF so that every tutorial
+# script runs against both programs.
+name: alqemi-docs
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - numpy
+  - opt_einsum
+  - psi4
+  - pyscf
+  - pytest
+  - sphinx
+  - pydata-sphinx-theme
+  - sphinx-design
+  - sphinx-copybutton

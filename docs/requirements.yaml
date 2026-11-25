@@ -1,22 +1,13 @@
+# Environment for building the documentation (ReadTheDocs and local builds).
 name: docs_ALQEMI
 channels:
-
   - conda-forge
-
-  - defaults
 dependencies:
-    # Base depends
-  - python
+  - python=3.12
   - pip
-  
+  - sphinx
   - pydata-sphinx-theme
   - sphinx-design
   - sphinx-copybutton
-
-
-
-
-    # Pip-only installs
   - pip:
     - -e ../
-

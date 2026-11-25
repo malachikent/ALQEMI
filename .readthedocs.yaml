@@ -1,12 +1,16 @@
+# ReadTheDocs build: https://alqemi.readthedocs.io/
+# Pages only include the tutorial scripts (they are run by the CI docs job), so this
+# environment needs no SCF program.
 version: 2
 
 build:
-  os: "ubuntu-22.04"
+  os: "ubuntu-24.04"
   tools:
-    python: "mambaforge-22.9"
+    python: "miniforge3-latest"
 
 sphinx:
-   configuration: docs/conf.py
+  configuration: docs/conf.py
+  fail_on_warning: true
 
 conda:
   environment: docs/requirements.yaml

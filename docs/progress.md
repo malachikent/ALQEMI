@@ -108,15 +108,23 @@
   (cheatsheet, user guide, seven tutorials checked against Psi4 and PySCF,
   ReadTheDocs, CI docs job).
 
+- Step 15 implemented: `docs/cheatsheet.rst`, `docs/user_guide/` (ten pages),
+  `docs/tutorials/` (seven pages and their scripts, with `integrals.py` and `scf.py`),
+  `.readthedocs.yaml`, `devtools/conda-envs/docs_env.yaml`, CI `docs` job; README,
+  `pyproject.toml` and CHANGELOG point to alqemi.readthedocs.io.
+
 ## In progress
-- Step 15: spec and tests written; the pages, scripts and configuration are not in
-  the repo yet, so most of `test_step15_docs.py` fails until they are.
+- Nothing.
 
 ## Tests
-- `pytest alqemi`: 1179 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 72 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12, 51 in step 13, 55 in step 14), 0 failing. About 45 s.
+- `pytest alqemi`: 1280 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 72 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12, 51 in step 13, 55 in step 14, 101 in step 15), 0 failing, with Psi4, PySCF and Sphinx installed; without them the tutorial and build tests skip.
 
 ## Next step
-Implement Step 15 (docs pages, tutorial scripts, ReadTheDocs and CI configuration).
-Later: BCH performance at order 4, an expression product / bracket dummy freshening,
-deltas in code generation, triples permutation operators. Also: fix the pytest deprecation warning
+Import the repo on readthedocs.org (user). Then choose Step 16. Candidates found while
+writing the tutorials (details in DESIGN_DECISIONS.md, Step 15):
+- `bch(H, T1 + T2, order=4)` takes about 19 minutes (tutorials use order 3 + T1^4).
+- No public product of two expressions; brackets don't freshen dummies that clash
+  with the other operand's free indices (`comm(bch(...), excitation(2))` raises).
+- Spin-integrated output prints some amplitudes in non-canonical index order (t^{aA}_{Ij}).
+Other candidates: deltas in code generation, triples permutation operators. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

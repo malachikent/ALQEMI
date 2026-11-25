@@ -10,6 +10,14 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+### Added
+- User documentation on ReadTheDocs (https://alqemi.readthedocs.io/): getting started,
+  a one-page cheatsheet, a ten-page user guide whose examples run as doctests, and seven
+  tutorials (first commutator, MP2, CCD, CCSD, UHF-CCSD, Lambda-CCD, LaTeX). The
+  tutorials are runnable scripts checked against Psi4 and PySCF.
+- CI `docs` job: runs every tutorial with Psi4 and PySCF and builds the site with
+  warnings as errors.
+
 ## [0.5.0] - 2026-11-24
 
 ### Added

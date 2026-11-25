@@ -1,0 +1,59 @@
+2. MP2
+======
+
+**Goal:** derive MP2 from first principles, generate code for it, and reproduce the
+MP2 energy of an SCF program to all printed digits.
+
+The equations
+-------------
+
+With H = F + Φ and a Hartree–Fock reference, the first-order doubles amplitudes solve
+
+.. math::
+
+   \langle \Phi^{ab}_{ij} | [F, T_2] + \Phi | \mathrm{HF} \rangle = 0,
+
+and the energy through second order is ⟨HF\| H + [H, T\ :sub:`2`] \|HF⟩. Both are one
+line each in ALQEMI:
+
+.. code-block:: python
+
+   residual = projection(2, bch(fock_operator(), T2, order=1)) + projection(2, fluctuation_potential())
+   energy = vacuum_expectation(bch(hamiltonian(), T2, order=1))
+
+``bch(F, T2, order=1)`` is F + [F, T\ :sub:`2`]. Its F part cannot reach a double
+excitation, so it projects to zero. The residual is
+
+.. math::
+
+   R^{ab}_{ij} = \langle ab \| ij \rangle + (1 - P_{ab}) \sum_c f^a_c t^{cb}_{ij}
+                 - (1 - P_{ij}) \sum_k f^k_j t^{ab}_{ik}
+
+and the energy is the Hartree–Fock energy plus ¼ Σ t\ :sup:`ab`\ :sub:`ij`
+⟨ij‖ab⟩.
+
+Solving
+-------
+
+For canonical orbitals the residual is R = ⟨ab‖ij⟩ − D t with
+D = f\ :sub:`ii` + f\ :sub:`jj` − f\ :sub:`aa` − f\ :sub:`bb`. The update
+t ← t + R / D reaches the exact t = ⟨ab‖ij⟩ / D in one step. The script still
+iterates to convergence, because the same loop works for non-canonical orbitals.
+
+Results (water, STO-3G)
+-----------------------
+
+.. code-block:: text
+
+   HF energy    ALQEMI -74.9631467757  psi4 -74.9631467757  diff 0.0e+00
+   MP2 energy   ALQEMI -74.9987553080  psi4 -74.9987553080  diff 0.0e+00
+
+PySCF agrees to 10\ :sup:`-13` E\ :sub:`h`. The "HF energy" check evaluates the
+generated energy function with t = 0. It tests the integral blocks and the
+Hartree–Fock part of the derivation on their own.
+
+The script
+----------
+
+.. literalinclude:: scripts/tutorial02_mp2.py
+   :language: python

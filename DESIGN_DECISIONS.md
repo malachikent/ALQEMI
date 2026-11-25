@@ -501,7 +501,7 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
 - Found while validating: unsimplified input with a duplicated term could pair a
   term with its own copy; fixed by the self-map rule above, with tests.
 
-## Step 15 (spec 2026-11-25): user documentation
+## Step 15 (done 2026-11-25): user documentation
 - Spec + tests: `alqemi/tests/test_step15_docs.py` (spec in its docstring). Validated
   against a prototype of the full docs with Psi4 1.11, PySCF 2.15 and Sphinx 9.1:
   1280 tests pass, none skipped; 15 of 16 planted bugs caught. The miss, a script

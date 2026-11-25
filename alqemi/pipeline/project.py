@@ -35,7 +35,7 @@ from alqemi.pipeline.simplify import simplify
 
 
 def vacuum_expectation(x) -> Expr:
-    """<HF| x |HF> as operator-free, simplified terms.
+    """``<HF| x |HF>`` as operator-free, simplified terms.
 
     Raises ValueError for a free GENERAL index (its value depends on its space);
     UnsupportedBracket and DanglingSum propagate.
@@ -64,7 +64,7 @@ def vacuum_expectation(x) -> Expr:
 
 
 def projection(n: int, x) -> Expr:
-    """<mu_n| x |HF> = <HF| tau_mu^dagger x |HF>; n = 0 gives <HF| x |HF>.
+    """``<mu_n| x |HF> = <HF| tau_mu^dagger x |HF>``; n = 0 gives ``<HF| x |HF>``.
 
     The result's free indices are those of ``excitation(n)``. Raises ValueError if a
     free index of ``x`` has one of their names.
