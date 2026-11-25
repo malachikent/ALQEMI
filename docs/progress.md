@@ -89,13 +89,19 @@
   spin blocks in `codegen/einsum.py`; public API, `docs/api.rst`, CHANGELOG. The private
   cross-check against the user's hand-written UHF functions still agrees.
 
+- Step 13 spec and tests: `alqemi/tests/test_step13_latex.py` (51 checks), direct
+  LaTeX printing (`latex`, `Expr._repr_latex_`). Step 7's PUBLIC_API gains `latex`.
+  P(ij)/P(ab) grouping recorded as planned.
+
 ## In progress
-- Nothing is half-done.
+- Step 13: spec and tests written; `alqemi/printing/latex.py` not implemented yet, so
+  `test_step13_latex.py` and the Step 7 public-API tests fail until it is.
 
 ## Tests
 - `pytest alqemi`: 1069 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 68 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12), 0 failing. About 40-45 s.
 
 ## Next step
-Choose Step 13: direct LaTeX printing (decision 13; print BCH factors explicitly),
-deltas in code generation, or a recorded candidate (DESIGN_DECISIONS.md, "Candidates"). Also: fix the pytest deprecation warning
+Implement Step 13 (`alqemi/printing/`, `Expr._repr_latex_`, public API, docs/api.rst,
+CHANGELOG). Later: P(ij)/P(ab) grouping, deltas in code generation, or a recorded
+candidate. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

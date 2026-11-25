@@ -463,6 +463,28 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   found. Reported to the user: build_doubles_2com_T1_drv and
   build_doubles_4com_T1_drv call functions that are not defined in the file.
 
+## Step 13 (spec 2026-11-24): direct LaTeX printing
+- Spec + tests: `alqemi/tests/test_step13_latex.py` (51 checks, spec in its
+  docstring). Validated against a prototype: 1121 tests pass; 13 of 13 planted bugs
+  caught. The CCSD energy, CCD residual and UHF spin blocks also compile with
+  pdflatex (checked locally, not in CI).
+- `latex(x, *, double_bar=("v",), lhs=None, terms_per_line=None)` in
+  `alqemi/printing/latex.py` prints every ALQEMI object directly (decision 13).
+  Settled with the user: <pq||rs> as \langle pq \| rs \rangle (\| is the double
+  bar), f^{a}_{c} and t^{ab}_{ij} as tensors, explicit \sum_{ck}, alpha/beta by
+  upper/lower case, coefficients as \frac{p}{q} (so BCH factors always show when
+  an expression holds them), `lhs` + `terms_per_line` give an align* block.
+  `Expr._repr_latex_` for Jupyter.
+- Printed term by term. P(ij)/P(ab) grouping is planned (below).
+
+## Planned: permutation operators P(ij), P(ab) in printing (wanted by the user)
+Group terms that differ only by exchanging free indices of the same space (and
+spin) and print them once with P(ij) = 1 - (i<->j), P(ab), P(ij)P(ab), as
+textbooks write the CCD residual (18 terms -> about 9). Needs its own algorithm
+(detect the exchange relation up to dummy renaming and tensor symmetries, with the
+sign) and its own tests; the printed grouped form must expand back to exactly the
+term-by-term expression.
+
 ## Spin integration: background (recorded before Step 12)
 ALQEMI derives spin-orbital equations. The user's UHF codes store spin blocks
 (t2_OOVV / t2_OoVv / t2_oovv for aa / ab / bb). Turning one spin-orbital equation
