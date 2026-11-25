@@ -478,13 +478,32 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   `Expr._repr_latex_` for Jupyter.
 - Printed term by term. P(ij)/P(ab) grouping is planned (below).
 
-## Planned: permutation operators P(ij), P(ab) in printing (wanted by the user)
-Group terms that differ only by exchanging free indices of the same space (and
-spin) and print them once with P(ij) = 1 - (i<->j), P(ab), P(ij)P(ab), as
-textbooks write the CCD residual (18 terms -> about 9). Needs its own algorithm
-(detect the exchange relation up to dummy renaming and tensor symmetries, with the
-sign) and its own tests; the printed grouped form must expand back to exactly the
-term-by-term expression.
+## Step 14 (spec 2026-11-24): permutation operators (1 - P_ij), (1 - P_ab)
+- Spec + tests: `alqemi/tests/test_step14_permutations.py` (55 checks, spec in its
+  docstring). Validated against a prototype: 1179 tests pass; 13 of 14 planted bugs
+  caught. The miss, grouping free indices by space only (ignoring spin), is
+  equivalent: an alpha<->beta exchange of free indices maps a term to +-itself
+  (never used) or to a spin-violating form no term has.
+- Settled with the user: doubles forms (1 - P_{ij}), (1 - P_{ab}) and
+  (1 - P_{ij})(1 - P_{ab}) only (triples forms P(i/jk) later), printed as
+  (1 - P_{ij}) like the user's code comments, shared by LaTeX and code generation,
+  opt-in (group=True).
+- `group_permutations(expr)` -> PermutedTerm(term, swaps): partners found with
+  Simplify's like-term key (exact up to dummy renaming and tensor symmetries);
+  greedy in expression order, product first, then occupied pair, then virtual
+  pair; a swap mapping a term to +-itself is never used for it.
+  `expand_permutations` writes groups out; expanding always gives back the input.
+- Results: CCD residual 18 terms -> 10 groups (textbook form); UHF same-spin
+  blocks shrink (CCD OOVV 32 -> 15), mixed OoVv blocks have no swaps. Generated
+  code: one einsum per group, then tmp - tmp.swapaxes(...), the user's style;
+  identical numbers to term-by-term code (also checked on the UHF blocks in the
+  scratchpad).
+- Found while validating: unsimplified input with a duplicated term could pair a
+  term with its own copy; fixed by the self-map rule above, with tests.
+
+## Planned: triples permutation operators
+P(i/jk) = 1 - P_ij - P_ik, P(ij/k) and products, for triples-level equations; add
+when ALQEMI derives triples.
 
 ## Spin integration: background (recorded before Step 12)
 ALQEMI derives spin-orbital equations. The user's UHF codes store spin blocks

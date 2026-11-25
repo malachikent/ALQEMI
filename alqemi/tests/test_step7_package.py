@@ -6,7 +6,7 @@ and no runtime dependencies.
 
   Public API: alqemi/__init__.py
     ``from alqemi import *`` gives exactly PUBLIC_API (below), via ``__all__``.
-    (Steps 8, 9, 11, 12 and 13 added their names to PUBLIC_API.)
+    (Steps 8, 9 and 11-14 added their names to PUBLIC_API.)
     Everything else stays importable from its submodule (alqemi.rules.hjo.RULES,
     alqemi.core.expr.as_expr, ...) but is not re-exported.
     ``alqemi.__version__`` is a str. It comes from alqemi/_version.py (written by
@@ -74,6 +74,8 @@ PUBLIC_API = {
     "Spin", "spin_integrate",
     # printing (added by Step 13)
     "latex",
+    # permutation operators (added by Step 14)
+    "PermutedTerm", "group_permutations", "expand_permutations",
 }
 
 PACKAGE_DIR = Path(alqemi.__file__).resolve().parent
@@ -134,6 +136,8 @@ def test_public_name_is_the_submodule_object(name):
         "einsum_code": "alqemi.codegen.einsum",
         "Spin": "alqemi.core.indices", "spin_integrate": "alqemi.pipeline.spin",
         "latex": "alqemi.printing.latex",
+        "PermutedTerm": "alqemi.pipeline.permute", "group_permutations": "alqemi.pipeline.permute",
+        "expand_permutations": "alqemi.pipeline.permute",
     }
     assert getattr(alqemi, name) is getattr(importlib.import_module(homes[name]), name)
 
