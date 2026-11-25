@@ -40,7 +40,7 @@ document = "\n".join([
 
 out = os.environ.get("ALQEMI_OUTPUT", ".")
 path = os.path.join(out, "ccd_equations.tex")
-with open(path, "w") as handle:
+with open(path, "w", encoding="utf-8") as handle:
     handle.write(document + "\n")
 print(f"wrote {path}")
 

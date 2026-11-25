@@ -218,7 +218,7 @@ def _python_files():
 
 
 def _imported_modules(path):
-    tree = ast.parse(path.read_text(), filename=str(path))
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
@@ -258,7 +258,7 @@ def pyproject():
         pytest.skip("needs the source checkout")
     import tomllib
 
-    return tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    return tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 
 
 def _requirement_names(reqs):
@@ -298,7 +298,7 @@ def test_discovered_packages(pyproject):
 # Docs and metadata
 @needs_checkout
 def test_api_docs_list_exactly_the_public_api():
-    text = (REPO_ROOT / "docs" / "api.rst").read_text()
+    text = (REPO_ROOT / "docs" / "api.rst").read_text(encoding="utf-8")
     listed = re.findall(r"^\s+alqemi\.(\w+)\s*$", text, flags=re.MULTILINE)
     assert set(listed) == PUBLIC_API
     for name in listed:
@@ -308,5 +308,5 @@ def test_api_docs_list_exactly_the_public_api():
 @needs_checkout
 def test_no_cookiecutter_placeholders():
     files = [REPO_ROOT / "README.md", *sorted((REPO_ROOT / "docs").rglob("*.rst"))]
-    offenders = [str(f.relative_to(REPO_ROOT)) for f in files if "REPLACE_WITH" in f.read_text()]
+    offenders = [str(f.relative_to(REPO_ROOT)) for f in files if "REPLACE_WITH" in f.read_text(encoding="utf-8")]
     assert offenders == []

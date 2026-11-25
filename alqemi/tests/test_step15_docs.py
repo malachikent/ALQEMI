@@ -108,7 +108,7 @@ def _script(tutorial: str) -> Path:
 
 def _toctree(path: Path):
     """Entries of the first toctree in an rst file, in order."""
-    lines = path.read_text().splitlines()
+    lines = path.read_text(encoding="utf-8").splitlines()
     start = next(n for n, line in enumerate(lines) if line.strip().startswith(".. toctree::"))
     entries = []
     for line in lines[start + 1:]:
@@ -143,14 +143,14 @@ def test_tutorials_toctree():
 
 @pytest.mark.parametrize("tutorial", TUTORIALS)
 def test_tutorial_page_includes_its_script(tutorial):
-    page = (DOCS / "tutorials" / f"{tutorial}.rst").read_text()
+    page = (DOCS / "tutorials" / f"{tutorial}.rst").read_text(encoding="utf-8")
     script = _script(tutorial)
     assert script.is_file()
     assert f".. literalinclude:: scripts/{script.name}" in page
 
 
 def test_tutorials_index_includes_helpers():
-    page = (DOCS / "tutorials" / "index.rst").read_text()
+    page = (DOCS / "tutorials" / "index.rst").read_text(encoding="utf-8")
     for helper in ("integrals.py", "scf.py"):
         assert (SCRIPTS / helper).is_file()
         assert f".. literalinclude:: scripts/{helper}" in page
@@ -159,14 +159,14 @@ def test_tutorials_index_includes_helpers():
 def test_no_placeholder_text():
     pages = sorted(DOCS.rglob("*.rst"))
     offenders = [str(p.relative_to(REPO_ROOT)) for p in pages
-                 if "You might choose to write" in p.read_text() or "This page details how to" in p.read_text()]
+                 if "You might choose to write" in p.read_text(encoding="utf-8") or "This page details how to" in p.read_text(encoding="utf-8")]
     assert offenders == []
 
 
 # ---- cheatsheet -----------------------------------------------------------------
 @pytest.mark.parametrize("name", alqemi.__all__)
 def test_cheatsheet_names_every_public_name(name):
-    text = (DOCS / "cheatsheet.rst").read_text()
+    text = (DOCS / "cheatsheet.rst").read_text(encoding="utf-8")
     assert re.search(rf"(?<![\w.]){re.escape(name)}(?!\w)", text), name
 
 
@@ -175,7 +175,7 @@ def test_cheatsheet_names_every_public_name(name):
 def test_page_doctests_pass(page):
     path = DOCS / page
     parser = doctest.DocTestParser()
-    examples = parser.get_examples(path.read_text())
+    examples = parser.get_examples(path.read_text(encoding="utf-8"))
     assert examples, f"{page} has no >>> examples"
     flags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
     result = doctest.testfile(str(path), module_relative=False, optionflags=flags, verbose=False,
@@ -188,13 +188,13 @@ _PRIVATE_IMPORT = re.compile(r"^\s*(?:>>>\s*)?(?:from\s+alqemi\.\w|import\s+alqe
 
 def test_pages_and_scripts_use_only_the_public_api():
     files = sorted(DOCS.rglob("*.rst")) + sorted(SCRIPTS.glob("*.py"))
-    offenders = [str(f.relative_to(REPO_ROOT)) for f in files if _PRIVATE_IMPORT.search(f.read_text())]
+    offenders = [str(f.relative_to(REPO_ROOT)) for f in files if _PRIVATE_IMPORT.search(f.read_text(encoding="utf-8"))]
     assert offenders == []
 
 
 @pytest.mark.parametrize("script", sorted(p.name for p in SCRIPTS.glob("*.py")) if SCRIPTS.is_dir() else [])
 def test_script_imports_are_public(script):
-    text = (SCRIPTS / script).read_text()
+    text = (SCRIPTS / script).read_text(encoding="utf-8")
     imported = set()
     for block in re.findall(r"^from alqemi import \(?([^)\n]*(?:\n[^)\n]*)*?)\)?$", text, re.MULTILINE):
         imported |= {n.strip() for n in block.replace("\n", ",").split(",") if n.strip()}
@@ -280,7 +280,7 @@ def test_commutator_tutorial_result(monkeypatch, tmp_path, capsys):
 
 def test_latex_tutorial_writes_document(monkeypatch, tmp_path, capsys):
     _run("07_latex", monkeypatch, tmp_path, capsys)
-    tex = (tmp_path / "ccd_equations.tex").read_text()
+    tex = (tmp_path / "ccd_equations.tex").read_text(encoding="utf-8")
     assert r"\begin{align*}" in tex and "(1 - P_{ij})" in tex and r"\end{document}" in tex
     if shutil.which("pdflatex"):
         assert (tmp_path / "ccd_equations.pdf").is_file()
@@ -291,14 +291,14 @@ def test_ccsd_tutorial_writes_module(monkeypatch, tmp_path, capsys):
         pytest.skip("needs Psi4 or PySCF")
     program = "psi4" if _installed("psi4") else "pyscf"
     _run("04_ccsd", monkeypatch, tmp_path, capsys, program)
-    source = (tmp_path / "ccsd_residuals.py").read_text()
+    source = (tmp_path / "ccsd_residuals.py").read_text(encoding="utf-8")
     for name in ("def ccsd_energy(", "def ccsd_r1(", "def ccsd_r2("):
         assert name in source
 
 
 # ---- build and hosting ----------------------------------------------------------
 def test_conf_has_no_language_none():
-    assert not re.search(r"^language\s*=\s*None", (DOCS / "conf.py").read_text(), re.MULTILINE)
+    assert not re.search(r"^language\s*=\s*None", (DOCS / "conf.py").read_text(encoding="utf-8"), re.MULTILINE)
 
 
 def test_sphinx_build_without_warnings(tmp_path):
@@ -307,13 +307,13 @@ def test_sphinx_build_without_warnings(tmp_path):
             pytest.skip(f"{module} is not installed")
     run = subprocess.run(
         [sys.executable, "-m", "sphinx", "-W", "--keep-going", "-q", "-b", "html", str(DOCS), str(tmp_path / "html")],
-        cwd=REPO_ROOT, capture_output=True, text=True, timeout=600,
+        cwd=REPO_ROOT, capture_output=True, text=True, encoding="utf-8", timeout=600,
     )
     assert run.returncode == 0, run.stderr[-4000:]
 
 
 def test_readthedocs_config():
-    text = (REPO_ROOT / ".readthedocs.yaml").read_text()
+    text = (REPO_ROOT / ".readthedocs.yaml").read_text(encoding="utf-8")
     assert re.search(r"^version:\s*2\s*$", text, re.MULTILINE)
     assert re.search(r"configuration:\s*docs/conf.py", text)
     assert re.search(r"fail_on_warning:\s*true", text)
@@ -321,7 +321,7 @@ def test_readthedocs_config():
 
 
 def test_docs_requirements_need_no_scf_program():
-    text = (DOCS / "requirements.yaml").read_text()
+    text = (DOCS / "requirements.yaml").read_text(encoding="utf-8")
     for package in ("pydata-sphinx-theme", "sphinx-design", "sphinx-copybutton"):
         assert package in text
     assert "psi4" not in text and "pyscf" not in text
@@ -329,17 +329,17 @@ def test_docs_requirements_need_no_scf_program():
 
 def test_documentation_url():
     url = "https://alqemi.readthedocs.io/"
-    assert re.search(rf'^"?Documentation"?\s*=\s*"{re.escape(url)}"', (REPO_ROOT / "pyproject.toml").read_text(),
+    assert re.search(rf'^"?Documentation"?\s*=\s*"{re.escape(url)}"', (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"),
                      re.MULTILINE)
-    assert "alqemi.readthedocs.io" in (REPO_ROOT / "README.md").read_text()
+    assert "alqemi.readthedocs.io" in (REPO_ROOT / "README.md").read_text(encoding="utf-8")
 
 
 def test_ci_docs_job():
-    ci = (REPO_ROOT / ".github" / "workflows" / "CI.yaml").read_text()
+    ci = (REPO_ROOT / ".github" / "workflows" / "CI.yaml").read_text(encoding="utf-8")
     assert "devtools/conda-envs/docs_env.yaml" in ci
     assert "alqemi/tests/test_step15_docs.py" in ci
     assert "sphinx-build -W" in ci
-    env = (REPO_ROOT / "devtools" / "conda-envs" / "docs_env.yaml").read_text()
+    env = (REPO_ROOT / "devtools" / "conda-envs" / "docs_env.yaml").read_text(encoding="utf-8")
     for package in ("psi4", "pyscf", "sphinx", "pydata-sphinx-theme", "sphinx-design", "sphinx-copybutton"):
         assert re.search(rf"^\s*-\s*{re.escape(package)}\b", env, re.MULTILINE), package
 
@@ -347,8 +347,8 @@ def test_ci_docs_job():
 def test_scripts_run_standalone_from_their_folder(tmp_path):
     """A reader runs `python tutorial01_commutator.py` inside scripts/; no test harness."""
     pytest.importorskip("numpy")
-    env = dict(os.environ, ALQEMI_OUTPUT=str(tmp_path))
+    env = dict(os.environ, ALQEMI_OUTPUT=str(tmp_path), PYTHONIOENCODING="utf-8")
     run = subprocess.run([sys.executable, "tutorial01_commutator.py"], cwd=SCRIPTS, env=env,
-                         capture_output=True, text=True, timeout=300)
+                         capture_output=True, text=True, encoding="utf-8", timeout=300)
     assert run.returncode == 0, run.stderr[-2000:]
     assert "largest matrix difference" in run.stdout

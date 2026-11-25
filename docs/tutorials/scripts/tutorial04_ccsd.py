@@ -45,7 +45,7 @@ source = "\n\n".join([
     einsum_code(r2, "ccsd_r2", group=True),
 ])
 path = os.path.join(os.environ.get("ALQEMI_OUTPUT", "."), "ccsd_residuals.py")
-with open(path, "w") as handle:
+with open(path, "w", encoding="utf-8") as handle:
     handle.write(source + "\n")
 spec = importlib.util.spec_from_file_location("ccsd_residuals", path)
 ccsd = importlib.util.module_from_spec(spec)
