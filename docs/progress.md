@@ -104,13 +104,19 @@
   `expand_permutations`), `group=` in `latex` and `einsum_code`; public API,
   `docs/api.rst`, CHANGELOG.
 
+- Step 15 spec and tests: `alqemi/tests/test_step15_docs.py`, user documentation
+  (cheatsheet, user guide, seven tutorials checked against Psi4 and PySCF,
+  ReadTheDocs, CI docs job).
+
 ## In progress
-- Nothing.
+- Step 15: spec and tests written; the pages, scripts and configuration are not in
+  the repo yet, so most of `test_step15_docs.py` fails until they are.
 
 ## Tests
 - `pytest alqemi`: 1179 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 72 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12, 51 in step 13, 55 in step 14), 0 failing. About 45 s.
 
 ## Next step
-Choose Step 15: deltas in code generation, triples
-permutation operators, or a recorded candidate. Also: fix the pytest deprecation warning
+Implement Step 15 (docs pages, tutorial scripts, ReadTheDocs and CI configuration).
+Later: BCH performance at order 4, an expression product / bracket dummy freshening,
+deltas in code generation, triples permutation operators. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

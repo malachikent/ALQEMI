@@ -501,6 +501,39 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
 - Found while validating: unsimplified input with a duplicated term could pair a
   term with its own copy; fixed by the self-map rule above, with tests.
 
+## Step 15 (spec 2026-11-25): user documentation
+- Spec + tests: `alqemi/tests/test_step15_docs.py` (spec in its docstring). Validated
+  against a prototype of the full docs with Psi4 1.11, PySCF 2.15 and Sphinx 9.1:
+  1280 tests pass, none skipped; 15 of 16 planted bugs caught. The miss, a script
+  that compares its CCSD energy with itself, is equivalent while ALQEMI is right
+  (its energy matches Psi4 to 6e-12, inside the 1e-9 recheck); combined with wrong
+  equations (BCH cut to order 2) it is caught by the independent recomputation.
+- Settled with the user: reStructuredText (Sphinx, the existing setup); a one-page
+  cheatsheet, a user guide (one page per concept) and tutorials; real numbers from
+  Psi4 first, PySCF as a second program; the six planned tutorials plus MP2 (seven:
+  commutator, MP2, CCD, CCSD, UHF-CCSD, Lambda-CCD, LaTeX); hosted on ReadTheDocs.
+- Every example is tested: `>>>` examples on the guide pages run as doctests;
+  tutorials are plain scripts (`docs/tutorials/scripts`) that pages include verbatim
+  and that record CHECKS (label, ALQEMI value, reference); the test compares every
+  check itself and recomputes every SCF-program reference independently, so a script
+  cannot pass by comparing with itself. Tutorials 2-6 run once per program and skip
+  when it is not installed; a CI `docs` job installs both and runs sphinx-build -W.
+- Program-independent helpers: `integrals.py` builds the `moeris` blocks generated
+  code reads (spin-orbital or UHF, on demand, from AO integrals + MO coefficients);
+  `scf.py` runs the SCF with Psi4 or PySCF and returns numpy arrays.
+- Checks used: matrices (commutator); Psi4/PySCF MP2, CCSD, UHF-CCSD; CCD (Psi4 has no
+  conventional CCD) via its first Jacobi step = MP2; Lambda-CCD via a fixed-orbital
+  finite-field derivative of the CCD energy equal to the Lambda dipole expectation.
+- Found while writing the tutorials (recorded, not fixed in this step):
+  - `bch(H, T1 + T2, order=4)` takes about 19 minutes; the CCSD projections need only
+    order 3 plus the T1^4 term (order 4 contributes T1^4 to the doubles only), which
+    takes seconds and gives the identical result (checked once against order 4).
+  - No public product of two expressions, and brackets do not freshen dummy names
+    that clash with the other operand's free indices (`comm(bch(...), excitation(2))`
+    raises). The Lambda tutorial works around both with Term(...) and Term.rename.
+  - Spin-integrated output prints some amplitudes with non-canonical index order
+    (t^{aA}_{Ij}): correct by antisymmetry, but not the stored OoVv order.
+
 ## Planned: triples permutation operators
 P(i/jk) = 1 - P_ij - P_ik, P(ij/k) and products, for triples-level equations; add
 when ALQEMI derives triples.
