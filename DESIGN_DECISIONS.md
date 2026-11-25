@@ -478,7 +478,7 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   `Expr._repr_latex_` for Jupyter.
 - Printed term by term. P(ij)/P(ab) grouping is planned (below).
 
-## Step 14 (spec 2026-11-24): permutation operators (1 - P_ij), (1 - P_ab)
+## Step 14 (done 2026-11-24): permutation operators (1 - P_ij), (1 - P_ab)
 - Spec + tests: `alqemi/tests/test_step14_permutations.py` (55 checks, spec in its
   docstring). Validated against a prototype: 1179 tests pass; 13 of 14 planted bugs
   caught. The miss, grouping free indices by space only (ignoring spin), is

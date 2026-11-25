@@ -31,6 +31,7 @@ from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
 from alqemi.core.expr import Delta, ElementaryBracket, as_expr
 from alqemi.core.indices import Index, Space, Spin
 from alqemi.core.tensor import Swap, Tensor
+from alqemi.pipeline.permute import PermutedTerm, group_permutations
 
 DEFAULT_INTEGRALS: Mapping[str, str] = {
     "f": "moeris.f_{block}",
@@ -61,6 +62,7 @@ def einsum_code(
     integrals: Optional[Mapping[str, str]] = None,
     amplitudes: Optional[str] = None,
     backend: str = "numpy",
+    group: bool = False,
 ) -> str:
     """Python source of a function ``name`` that evaluates the operator-free ``expr``.
 
@@ -68,7 +70,8 @@ def einsum_code(
     (default DEFAULT_INTEGRALS); every other tensor is an amplitude argument named
     ``amplitudes.format(name=..., rank=..., block=...)`` (default "{name}{rank}",
     or "{name}{rank}_{block}" for spin-integrated input). ``backend`` is "numpy" or
-    "opt_einsum".
+    "opt_einsum". With ``group=True`` terms related by (1 - P_ij), (1 - P_ab) are
+    evaluated once into ``tmp`` and antisymmetrized with swapaxes (Step 14).
     Raises ValueError for input it cannot write (see the Step 11 spec).
     """
     if not isinstance(name, str) or not _IDENTIFIER.match(name):
@@ -94,7 +97,9 @@ def einsum_code(
     arguments: Set[str] = set()
     patterns: Dict[str, Tuple[str, str]] = {}
     body: List[str] = []
-    for term in expr:
+    groups = group_permutations(expr) if group else tuple(PermutedTerm(t, ()) for t in expr)
+    for g in groups:
+        term = g.term
         if term.factors:
             raise ValueError(f"term {term} has operators: project it first")
         if term.free_indices != free:
@@ -125,11 +130,26 @@ def einsum_code(
                     raise ValueError(f"amplitude {arg} occurs as blocks {patterns[arg]} and {pattern}")
                 arguments.add(arg)
                 operands.append((axes, arg))
-        body.append(f"    # {term}")
-        body.append(_line(term.coeff * sign, operands, output, call, tail))
+        if not g.swaps:
+            body.append(f"    # {term}")
+            body.append(_line(term.coeff * sign, operands, output, call, tail))
+            continue
+        perms = "".join(f"(1 - P_{p.name}{q.name})" for p, q in g.swaps)
+        body.append(f"    # {perms} {term}")
+        body.append(f"    tmp = {_contraction(operands, output, call, tail)}")
+        axes = [(output.index(p), output.index(q)) for p, q in g.swaps]
+        if len(axes) == 1:
+            combo = f"tmp - tmp{_sw(axes[0])}"
+        else:
+            combo = f"tmp - tmp{_sw(axes[0])} - tmp{_sw(axes[1])} + tmp{_sw(axes[0])}{_sw(axes[1])}"
+        c = term.coeff * sign
+        op = "-=" if c < 0 else "+="
+        size = abs(c)
+        body.append(f"    r {op} {combo}" if size == 1 else f"    r {op} {_number(size)} * ({combo})")
 
     params = sorted(objects) + sorted(arguments)
-    clash = (objects & arguments) | (set(params) & (_RESERVED | {name}))
+    reserved = _RESERVED | {name} | ({"tmp"} if group else set())
+    clash = (objects & arguments) | (set(params) & reserved)
     if clash:
         raise ValueError(f"argument name(s) {sorted(clash)} clash with each other or with r, np, oe, {name}")
     lines = [f"def {name}({', '.join(params)}):", "    r = 0.0", *body, "    return r"]
@@ -246,9 +266,17 @@ def _line(c: Fraction, operands, output: Sequence[Index], call: str, tail: str) 
     size = abs(c)
     if not operands:
         return f"    r {op} {_number(size)}"
+    factor = "" if size == 1 else f"{_number(size)} * "
+    return f"    r {op} {factor}{_contraction(operands, output, call, tail)}"
+
+
+def _contraction(operands, output: Sequence[Index], call: str, tail: str) -> str:
     letters = _letters(output, operands)
     spec = ",".join("".join(letters[ix] for ix in axes) for axes, _ in operands)
     spec += "->" + "".join(letters[ix] for ix in output)
     args = ", ".join(src for _, src in operands)
-    factor = "" if size == 1 else f"{_number(size)} * "
-    return f'    r {op} {factor}{call}("{spec}", {args}{tail})'
+    return f'{call}("{spec}", {args}{tail})'
+
+
+def _sw(axes) -> str:
+    return f".swapaxes({axes[0]}, {axes[1]})"

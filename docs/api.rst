@@ -45,3 +45,6 @@ API Documentation
    alqemi.Spin
    alqemi.spin_integrate
    alqemi.latex
+   alqemi.PermutedTerm
+   alqemi.group_permutations
+   alqemi.expand_permutations

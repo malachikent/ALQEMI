@@ -19,17 +19,22 @@ from alqemi.core.expr import Bracket, BracketKind, Delta, ElementaryBracket, Exp
 from alqemi.core.indices import Index
 from alqemi.core.operators import Kind, Op, OpString
 from alqemi.core.tensor import Tensor
+from alqemi.pipeline.permute import PermutedTerm, group_permutations
 
 _NUMBERED = re.compile(r"([A-Za-z]+)(\d+)\Z")
 
 
-def latex(x, *, double_bar=("v",), lhs=None, terms_per_line=None) -> str:
+def latex(x, *, double_bar=("v",), lhs=None, terms_per_line=None, group=False) -> str:
     """LaTeX for an Index, Op, OpString, Delta, ElementaryBracket, Tensor, Bracket,
     Term or Expr (TypeError otherwise).
 
     ``lhs`` gives "lhs = rhs"; with ``terms_per_line`` (needs ``lhs``, >= 1) the
-    result is an align* block with that many terms per line.
+    result is an align* block with that many terms per line. ``group=True`` prints
+    a Term or Expr with (1 - P_{ij}) and (1 - P_{ab}) factors (Step 14); a PermutedTerm
+    or a tuple of them is printed the same way.
     """
+    if group and isinstance(x, (Expr, Term)):
+        x = group_permutations(x)
     if terms_per_line is not None:
         if lhs is None or not isinstance(terms_per_line, int) or terms_per_line < 1:
             raise ValueError("terms_per_line needs lhs and an integer >= 1")
@@ -63,8 +68,12 @@ def _latex(x, db) -> str:
         return f"[{_expr(x.left, db)}, {_expr(x.right, db)}]{suffix}"
     if isinstance(x, Term):
         return _term(x, db)
+    if isinstance(x, PermutedTerm):
+        return _term(x.term, db, x.swaps)
     if isinstance(x, Expr):
         return _expr(x, db)
+    if isinstance(x, tuple) and all(isinstance(g, PermutedTerm) for g in x):
+        return _join(_signed(x, db)) if x else "0"
     raise TypeError(f"cannot print {type(x).__name__} as LaTeX")
 
 
@@ -86,8 +95,9 @@ def _number(c: Fraction) -> str:
     return rf"\frac{{{c.numerator}}}{{{c.denominator}}}"
 
 
-def _term(t: Term, db) -> str:
+def _term(t: Term, db, swaps=()) -> str:
     factors = [_latex(s, db) for s in t.scalars] + [_latex(f, db) for f in t.factors]
+    perms = "".join("(1 - P_{" + _list(pair) + "})" for pair in swaps) + (" " if swaps else "")
     if not factors:
         return ("-" if t.coeff < 0 else "") + _number(abs(t.coeff))
     body = r"\, ".join(factors)
@@ -96,14 +106,14 @@ def _term(t: Term, db) -> str:
     c = t.coeff
     sign = "-" if c < 0 else ""
     mag = abs(c)
-    return sign + ("" if mag == 1 else _number(mag) + " ") + body
+    return sign + ("" if mag == 1 else _number(mag) + " ") + perms + body
 
 
 def _signed(terms, db):
     """(sign, text without its sign) for each term."""
     out = []
     for t in terms:
-        text = _term(t, db)
+        text = _term(t.term, db, t.swaps) if isinstance(t, PermutedTerm) else _term(t, db)
         out.append(("-", text[1:]) if text.startswith("-") else ("+", text))
     return out
 
@@ -125,9 +135,11 @@ def _expr(e: Expr, db) -> str:
 def _align(x, lhs, n, db) -> str:
     if isinstance(x, Term):
         x = Expr((x,))
-    if not isinstance(x, Expr):
+    if isinstance(x, Expr):
+        x = x.terms
+    if not (isinstance(x, tuple) and all(isinstance(t, (Term, PermutedTerm)) for t in x)):
         raise TypeError("terms_per_line needs a Term or Expr")
-    parts = _signed(x.terms, db)
+    parts = _signed(x, db)
     if not parts:
         lines = [f"{lhs} &= 0"]
     else:

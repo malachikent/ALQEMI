@@ -100,15 +100,17 @@
   (1 - P_ij)/(1 - P_ab) grouping for LaTeX and code generation (opt-in). Step 7's
   PUBLIC_API gains PermutedTerm, group_permutations, expand_permutations.
 
+- Step 14 implemented: `alqemi/pipeline/permute.py` (`PermutedTerm`, `group_permutations`,
+  `expand_permutations`), `group=` in `latex` and `einsum_code`; public API,
+  `docs/api.rst`, CHANGELOG.
+
 ## In progress
-- Step 14: spec and tests written; `alqemi/pipeline/permute.py` not implemented yet, so
-  `test_step14_permutations.py` and the Step 7 public-API tests fail until it is.
+- Nothing.
 
 ## Tests
-- `pytest alqemi`: 1121 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 69 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12, 51 in step 13), 0 failing. About 40-45 s.
+- `pytest alqemi`: 1179 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 72 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12, 51 in step 13, 55 in step 14), 0 failing. About 45 s.
 
 ## Next step
-Implement Step 14 (`alqemi/pipeline/permute.py`, `group=` in latex and einsum_code,
-public API, docs/api.rst, CHANGELOG). Later: deltas in code generation, triples
+Choose Step 15: deltas in code generation, triples
 permutation operators, or a recorded candidate. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

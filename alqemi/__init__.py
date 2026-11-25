@@ -30,6 +30,7 @@ from alqemi.pipeline.bch import bch
 from alqemi.codegen.einsum import einsum_code
 from alqemi.pipeline.spin import spin_integrate
 from alqemi.printing.latex import latex
+from alqemi.pipeline.permute import PermutedTerm, expand_permutations, group_permutations
 from alqemi.rules.hjo import UnsupportedBracket
 from alqemi.builders import (
     cluster,
@@ -68,4 +69,6 @@ __all__ = [
     "spin_integrate",
     # printing
     "latex",
+    # permutation operators
+    "PermutedTerm", "group_permutations", "expand_permutations",
 ]

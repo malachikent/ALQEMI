@@ -10,6 +10,14 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+### Added
+- `group_permutations(expr)`: folds terms related by swapping two free indices into
+  `PermutedTerm` groups under (1 - P_ij), (1 - P_ab) and their product;
+  `expand_permutations` is its exact inverse.
+- `latex(..., group=True)` prints (1 - P_{ij}) factors; `einsum_code(..., group=True)`
+  evaluates each group once and antisymmetrizes with `swapaxes`. Both are opt-in;
+  default output is unchanged.
+
 ## [0.4.0] - 2026-11-24
 
 ### Added
