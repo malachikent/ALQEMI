@@ -463,10 +463,11 @@ possible: `excitation(n, virt="cd", occ="kl")` to choose the projection's free n
   found. Reported to the user: build_doubles_2com_T1_drv and
   build_doubles_4com_T1_drv call functions that are not defined in the file.
 
-## Step 13 (spec 2026-11-24): direct LaTeX printing
+## Step 13 (done 2026-11-24): direct LaTeX printing
 - Spec + tests: `alqemi/tests/test_step13_latex.py` (51 checks, spec in its
   docstring). Validated against a prototype: 1121 tests pass; 13 of 13 planted bugs
-  caught. The CCSD energy, CCD residual and UHF spin blocks also compile with
+  caught; the real code gives the same (1121 pass, 13 of 13). The CCSD energy, CCD
+  residual and UHF spin blocks also compile with
   pdflatex (checked locally, not in CI).
 - `latex(x, *, double_bar=("v",), lhs=None, terms_per_line=None)` in
   `alqemi/printing/latex.py` prints every ALQEMI object directly (decision 13).

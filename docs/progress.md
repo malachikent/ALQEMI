@@ -93,15 +93,16 @@
   LaTeX printing (`latex`, `Expr._repr_latex_`). Step 7's PUBLIC_API gains `latex`.
   P(ij)/P(ab) grouping recorded as planned.
 
+- Step 13 implemented: `alqemi/printing/latex.py` (`latex`), `Expr._repr_latex_`; public
+  API, `docs/api.rst`, CHANGELOG. Output compiles with pdflatex.
+
 ## In progress
-- Step 13: spec and tests written; `alqemi/printing/latex.py` not implemented yet, so
-  `test_step13_latex.py` and the Step 7 public-API tests fail until it is.
+- Nothing is half-done.
 
 ## Tests
-- `pytest alqemi`: 1069 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 68 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12), 0 failing. About 40-45 s.
+- `pytest alqemi`: 1121 pass (70 in step 1, 110 in step 2, 67 in step 3, 223 in step 4, 66 in step 5, 56 in step 6, 69 in step 7, 163 in step 8, 73 in step 9, 36 in step 10, 76 in step 11, 61 in step 12, 51 in step 13), 0 failing. About 40-45 s.
 
 ## Next step
-Implement Step 13 (`alqemi/printing/`, `Expr._repr_latex_`, public API, docs/api.rst,
-CHANGELOG). Later: P(ij)/P(ab) grouping, deltas in code generation, or a recorded
-candidate. Also: fix the pytest deprecation warning
+Choose Step 14: P(ij)/P(ab) grouping in printing (DESIGN_DECISIONS.md, "Planned"),
+deltas in code generation, or a recorded candidate. Also: fix the pytest deprecation warning
 about a class-scoped fixture.

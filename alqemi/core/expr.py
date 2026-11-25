@@ -314,6 +314,11 @@ class Expr:
     def __len__(self) -> int:
         return len(self.terms)
 
+    def _repr_latex_(self) -> str:
+        from alqemi.printing.latex import latex  # local: printing imports this module
+
+        return "$" + latex(self) + "$"
+
     def __iter__(self) -> Iterator[Term]:
         return iter(self.terms)
 

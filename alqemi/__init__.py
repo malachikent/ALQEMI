@@ -29,6 +29,7 @@ from alqemi.pipeline.project import projection, vacuum_expectation
 from alqemi.pipeline.bch import bch
 from alqemi.codegen.einsum import einsum_code
 from alqemi.pipeline.spin import spin_integrate
+from alqemi.printing.latex import latex
 from alqemi.rules.hjo import UnsupportedBracket
 from alqemi.builders import (
     cluster,
@@ -65,4 +66,6 @@ __all__ = [
     "einsum_code",
     # spin integration
     "spin_integrate",
+    # printing
+    "latex",
 ]

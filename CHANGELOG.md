@@ -10,6 +10,12 @@ To release: rename "Unreleased" to the new version and date, then tag that commi
 
 ## [Unreleased]
 
+### Added
+- `latex(x)`: LaTeX printing straight from ALQEMI's objects (no SymPy). Double-bar
+  integrals `\langle pq \| rs \rangle`, tensors `t^{ab}_{ij}`, explicit sums,
+  fractions (BCH factors always shown), alpha/beta by upper/lower case, and an
+  `align*` block via `lhs=` and `terms_per_line=`. Expressions also render in Jupyter.
+
 ## [0.3.0] - 2026-11-24
 
 ### Added

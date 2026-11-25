@@ -44,3 +44,4 @@ API Documentation
    alqemi.einsum_code
    alqemi.Spin
    alqemi.spin_integrate
+   alqemi.latex
